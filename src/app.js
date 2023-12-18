@@ -6,6 +6,7 @@ import { serveSwagger } from './swagger.js'
 import { userRouter } from './routes/user.routes.js'
 import { OAuth2Strategy } from 'passport-google-oauth'
 
+const port = process.env.PORT || 3000
 const app = express()
 serveSwagger(app)
 dotenv.config()
@@ -18,8 +19,8 @@ app.use(
   })
 )
 
-const serve = app.listen(process.env.PORT || 3000, () => {
-  console.log(`App running on ${serve.port}`)
+app.listen(port, () => {
+  console.log(`App running on ${port}`)
 })
 
 app.use('/users', userRouter)
