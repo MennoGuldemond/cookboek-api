@@ -18,7 +18,7 @@ model User {
 }
 
 model Recipe {
-  id           String     @id @default(uuid())
+  id           String                @id @default(uuid())
   title        String
   description  String
   photoURL     String
@@ -26,16 +26,24 @@ model Recipe {
   instructions String
   ingredients  String
   likes        Int
-  published    Boolean    @default(false)
-  author       User       @relation(fields: [authorId], references: [id])
+  published    Boolean               @default(false)
+  author       User                  @relation(fields: [authorId], references: [id])
   authorId     String
-  categories   Category[]
+  categories   CategoriesOnRecipes[]
 }
 
 model Category {
-  id          String  @id @default(uuid())
+  id          String                @id @default(uuid())
   name        String
   description String
-  Recipe      Recipe? @relation(fields: [recipeId], references: [id])
-  recipeId    String?
+  recipes     CategoriesOnRecipes[]
+}
+
+model CategoriesOnRecipes {
+  recipe     Recipe   @relation(fields: [recipeId], references: [id])
+  recipeId   String // relation scalar field (used in the `@relation` attribute above)
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String // relation scalar field (used in the `@relation` attribute above)
+
+  @@id([recipeId, categoryId])
 }
