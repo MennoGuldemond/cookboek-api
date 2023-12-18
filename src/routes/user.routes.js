@@ -22,7 +22,6 @@ userRouter.use(bodyParser.json()) // to use body object in requests
  *                 $ref: '#/prisma/'
  */
 userRouter.get('/', async (req, res) => {
-  console.log('users')
   try {
     let users = await userRepository.getAll()
     res.status(200).json(users)
@@ -33,7 +32,7 @@ userRouter.get('/', async (req, res) => {
 
 userRouter.get('/:id', async (req, res) => {
   try {
-    let user = await userRepository.getById(+req.params.id)
+    let user = await userRepository.getById(req.params.id)
     if (user) {
       res.status(200).json(user)
     } else {

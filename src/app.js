@@ -4,6 +4,7 @@ import session from 'express-session'
 import passport from 'passport'
 import { serveSwagger } from './swagger.js'
 import { userRouter } from './routes/user.routes.js'
+import { recipeRouter } from './routes/recipe.routes.js'
 import { OAuth2Strategy } from 'passport-google-oauth'
 
 const port = process.env.PORT || 3000
@@ -24,6 +25,7 @@ app.listen(port, () => {
 })
 
 app.use('/users', userRouter)
+app.use('/recipes', recipeRouter)
 
 passport.serializeUser(function (user, cb) {
   cb(null, user)

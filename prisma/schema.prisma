@@ -11,14 +11,14 @@ datasource db {
 }
 
 model User {
-  id      Int      @id @default(autoincrement())
+  id      String   @id @default(uuid())
   email   String   @unique
   name    String?
   recipes Recipe[]
 }
 
 model Recipe {
-  id           Int        @id @default(autoincrement())
+  id           String     @id @default(uuid())
   title        String
   description  String
   photoURL     String
@@ -28,14 +28,14 @@ model Recipe {
   likes        Int
   published    Boolean    @default(false)
   author       User       @relation(fields: [authorId], references: [id])
-  authorId     Int
+  authorId     String
   categories   Category[]
 }
 
 model Category {
-  id          Int     @id @default(autoincrement())
+  id          String  @id @default(uuid())
   name        String
   description String
   Recipe      Recipe? @relation(fields: [recipeId], references: [id])
-  recipeId    Int?
+  recipeId    String?
 }

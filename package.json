@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "prisma-push": "npx prisma db push",
+    "prisma-studio": "npx prisma studio"
   },
   "author": "Menno Guldemond",
   "license": "ISC",
