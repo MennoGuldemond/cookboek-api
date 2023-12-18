@@ -1,12 +1,13 @@
 import { prisma } from '../db/client.js'
+import * as logService from '../services/log.service.js'
 
 export async function getAll() {
   try {
     const users = await prisma.recipe.findMany()
     await prisma.$disconnect()
     return users
-  } catch (error) {
-    console.error(error)
+  } catch (err) {
+    logService.Error(err)
     await prisma.$disconnect()
   }
 }
@@ -18,8 +19,8 @@ export async function getById(id) {
       await prisma.$disconnect()
       return recipe
     })
-    .catch(async (error) => {
-      console.error(error)
+    .catch(async (err) => {
+      logService.Error(err)
       await prisma.$disconnect()
     })
 }
