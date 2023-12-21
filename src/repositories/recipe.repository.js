@@ -7,7 +7,7 @@ export async function getAll() {
     await prisma.$disconnect()
     return users
   } catch (err) {
-    logService.Error(err)
+    logService.error(err)
     await prisma.$disconnect()
   }
 }
@@ -20,7 +20,7 @@ export async function getById(id) {
       return recipe
     })
     .catch(async (err) => {
-      logService.Error(err)
+      logService.error(err)
       await prisma.$disconnect()
     })
 }

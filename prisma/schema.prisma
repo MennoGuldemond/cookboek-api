@@ -14,7 +14,9 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   name      String?
+  photoUrl  String?
   recipes   Recipe[]
+  provider  String?
   createdAt DateTime @default(now())
 }
 

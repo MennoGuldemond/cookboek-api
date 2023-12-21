@@ -1,13 +1,13 @@
 import * as logRepository from '../repositories/log.repository.js'
 
-export async function Error(message) {
+export async function error(message) {
   return await logRepository.create(message, 'Error')
 }
 
-export async function Warning(message) {
+export async function warning(message) {
   return await logRepository.create(message, 'Warning')
 }
 
-export async function Info(message) {
+export async function info(message) {
   return await logRepository.create(message, 'Info')
 }

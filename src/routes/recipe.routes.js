@@ -3,7 +3,7 @@ import bodyParser from 'body-parser'
 import * as recipeRepository from '../repositories/recipe.repository.js'
 
 export const recipeRouter = express.Router()
-recipeRouter.use(bodyParser.json()) // to use body object in requests
+recipeRouter.use(bodyParser.json())
 
 /**
  * @swagger
@@ -26,7 +26,7 @@ recipeRouter.get('/', async (req, res) => {
     let recipes = await recipeRepository.getAll()
     res.status(200).json(recipes)
   } catch (error) {
-    res.status(400).json(error)
+    res.status(500).json(error)
   }
 })
 
@@ -39,6 +39,6 @@ recipeRouter.get('/:id', async (req, res) => {
       res.status(404)
     }
   } catch (error) {
-    res.status(400).json(error)
+    res.status(500).json(error)
   }
 })
