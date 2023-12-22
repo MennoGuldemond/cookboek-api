@@ -15,3 +15,7 @@ export async function getByEmail(email) {
 export async function create(userProfile) {
   return await userRepository.create(userProfile)
 }
+
+export async function findOrCreate(userProfile) {
+  return await userRepository.findOrCreate(userProfile)
+}

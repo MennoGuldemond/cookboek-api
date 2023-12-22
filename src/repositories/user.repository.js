@@ -38,22 +38,22 @@ export async function getByEmail(email) {
     })
 }
 
-export async function findOrCreate(user) {
-  const found = await getByEmail(user.email)
+export async function findOrCreate(userProfile) {
+  const found = await getByEmail(userProfile.email)
   if (found) {
     return found
   }
-  return await create(user)
+  return await create(userProfile)
 }
 
-export async function create(user) {
+export async function create(userProfile) {
   try {
     const newUser = prisma.user.create({
       data: {
-        email: user.email,
-        name: user.displayName,
-        photoUrl: user.picture,
-        provider: user.provider,
+        email: userProfile.email,
+        name: userProfile.name,
+        photoUrl: userProfile.picture,
+        provider: 'Google',
       },
     })
     await prisma.$disconnect()
