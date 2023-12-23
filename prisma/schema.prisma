@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
 }
 
 datasource db {
@@ -25,7 +26,6 @@ model Recipe {
   title        String
   description  String
   photoURL     String
-  createdOn    DateTime
   instructions String
   ingredients  String
   likes        Int
@@ -60,4 +60,14 @@ model Log {
   message   String
   level     String
   createdAt DateTime @default(now())
+}
+
+view RecipeInfo {
+  id         String   @unique
+  title      String
+  likes      Int
+  authorName String
+  createdAt  DateTime
+
+  @@ignore
 }
