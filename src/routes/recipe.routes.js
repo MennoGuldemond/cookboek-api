@@ -1,6 +1,7 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import * as recipeRepository from '../repositories/recipe.repository.js'
+import { isAuthorized } from '../auth.js'
 
 export const recipeRouter = express.Router()
 recipeRouter.use(bodyParser.json())
@@ -23,8 +24,17 @@ recipeRouter.use(bodyParser.json())
  */
 recipeRouter.get('/', async (req, res) => {
   try {
-    let recipes = await recipeRepository.getAll()
+    let recipes = await recipeRepository.get()
     res.status(200).json(recipes)
+  } catch (error) {
+    res.status(500).json(error)
+  }
+})
+
+recipeRouter.get('/newest', async (req, res) => {
+  try {
+    let recipe = await recipeRepository.getNewest()
+    res.status(200).json(recipe)
   } catch (error) {
     res.status(500).json(error)
   }
@@ -37,6 +47,24 @@ recipeRouter.get('/:id', async (req, res) => {
       res.status(200).json(recipe)
     } else {
       res.status(404)
+    }
+  } catch (error) {
+    res.status(500).json(error)
+  }
+})
+
+recipeRouter.post('/', isAuthorized, async (req, res) => {
+  try {
+    const userProfile = res.locals.auth
+    // TODO: Implement ownership check for saving
+    // if (userProfile.id !== req.body.id) {
+    //   return res.status(401).send('UnAuthorized')
+    // }
+    let recipe = await recipeRepository.upsert(req.body)
+    if (recipe) {
+      return res.status(200).json(recipe)
+    } else {
+      return res.status(404)
     }
   } catch (error) {
     res.status(500).json(error)

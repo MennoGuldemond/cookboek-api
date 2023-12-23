@@ -10,8 +10,8 @@ export async function create(message, level) {
     })
     await prisma.$disconnect()
     return log
-  } catch (error) {
-    console.error(error)
+  } catch (err) {
+    console.error(err)
     await prisma.$disconnect()
   }
 }
