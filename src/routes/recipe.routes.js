@@ -55,11 +55,9 @@ recipeRouter.get('/:id', async (req, res) => {
 
 recipeRouter.post('/', isAuthorized, async (req, res) => {
   try {
-    const userProfile = res.locals.auth
-    // TODO: Implement ownership check for saving
-    // if (userProfile.id !== req.body.id) {
-    //   return res.status(401).send('UnAuthorized')
-    // }
+    if (res.locals.auth.sub !== req.body.authorId) {
+      return res.status(401).send('UnAuthorized')
+    }
     let recipe = await recipeRepository.upsert(req.body)
     if (recipe) {
       return res.status(200).json(recipe)

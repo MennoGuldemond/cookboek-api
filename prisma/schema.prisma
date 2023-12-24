@@ -7,12 +7,12 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String   @id
   email     String   @unique
   name      String?
   photoUrl  String?
@@ -24,11 +24,11 @@ model User {
 model Recipe {
   id           String                @id @default(uuid())
   title        String
-  description  String
+  description  String                @db.VarChar(4000)
   photoURL     String
-  instructions String
-  ingredients  String
-  likes        Int
+  instructions String                @db.VarChar(4000)
+  ingredients  String                @db.VarChar(4000)
+  likes        Int                   @default(0)
   published    Boolean               @default(false)
   author       User                  @relation(fields: [authorId], references: [id])
   authorId     String
@@ -67,7 +67,6 @@ view RecipeInfo {
   title      String
   likes      Int
   authorName String
+  photoURL   String
   createdAt  DateTime
-
-  @@ignore
 }

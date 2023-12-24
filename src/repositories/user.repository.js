@@ -50,6 +50,7 @@ export async function create(userProfile) {
   try {
     const newUser = prisma.user.create({
       data: {
+        id: userProfile.sub,
         email: userProfile.email,
         name: userProfile.name,
         photoUrl: userProfile.picture,

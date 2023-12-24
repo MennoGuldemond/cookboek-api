@@ -3,7 +3,7 @@ import * as logService from '../services/log.service.js'
 
 export async function get() {
   try {
-    const recipes = await prisma.recipe.findMany({ orderBy: { createdAt: 'desc' }, take: 10 })
+    const recipes = await prisma.recipeInfo.findMany({ orderBy: { createdAt: 'desc' }, take: 30 })
     await prisma.$disconnect()
     return recipes
   } catch (err) {
