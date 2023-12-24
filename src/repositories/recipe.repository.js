@@ -1,3 +1,5 @@
+import path from 'path'
+import { unlink } from 'node:fs/promises'
 import { prisma } from '../db/client.js'
 import * as logService from '../services/log.service.js'
 
@@ -53,7 +55,29 @@ export async function upsert(recipe) {
     await prisma.$disconnect()
     return savedRecipe
   } catch (err) {
-    console.error(err)
+    logService.error(err)
     await prisma.$disconnect()
+  }
+}
+
+export async function remove(recipeId, userId) {
+  try {
+    const recipe = await prisma.recipe.findUnique({ where: { id: recipeId, authorId: userId } })
+    if (!recipe) {
+      return false
+    }
+    await prisma.recipe.delete({
+      where: {
+        id: recipe.id,
+      },
+    })
+    const filePath = path.join('./public/images', path.parse(recipe.photoURL).name + path.parse(recipe.photoURL).ext)
+    await unlink(filePath)
+    await prisma.$disconnect()
+    return true
+  } catch (err) {
+    logService.error(err)
+    await prisma.$disconnect()
+    return false
   }
 }

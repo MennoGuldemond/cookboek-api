@@ -68,3 +68,16 @@ recipeRouter.post('/', isAuthorized, async (req, res) => {
     res.status(500).json(error)
   }
 })
+
+recipeRouter.delete('/:id', isAuthorized, async (req, res) => {
+  try {
+    let success = await recipeRepository.remove(req.params.id, res.locals.auth.sub)
+    if (success) {
+      return res.status(200).send(true)
+    } else {
+      return res.status(500).send(false)
+    }
+  } catch (error) {
+    res.status(500).json(error)
+  }
+})
