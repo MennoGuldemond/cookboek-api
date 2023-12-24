@@ -15,8 +15,8 @@ const options = {
       //   termsOfService: "http://example.com/terms/",
       contact: {
         name: 'API Support',
-        url: 'http://www.exmaple.com/support',
-        email: 'support@example.com',
+        url: 'http://www.cookboek.nl/support',
+        email: 'support@cookboek.nl',
       },
     },
     produces: ['application/json'],

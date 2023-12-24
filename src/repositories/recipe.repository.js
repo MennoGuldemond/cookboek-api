@@ -27,7 +27,7 @@ export async function getNewest() {
 
 export async function getById(id) {
   try {
-    const recipe = await prisma.recipe.findUnique({ where: { id: id }, include: { author: true } })
+    const recipe = await prisma.recipe.findUnique({ where: { id: id }, include: { author: true, categories: true } })
     await prisma.$disconnect()
     return recipe
   } catch (err) {
@@ -36,10 +36,14 @@ export async function getById(id) {
   }
 }
 
-export async function upsert(recipe) {
+export async function upsert(recipe, userId) {
   try {
     let savedRecipe = null
     if (recipe.id) {
+      const existingRecipe = await prisma.recipe.findUnique({ where: { id: recipe.id, authorId: userId } })
+      if (!existingRecipe) {
+        throw new Error(`upsert of recipe: ${recipe.id} by user:${userId} had no result, might be unauthorized.`)
+      }
       savedRecipe = await prisma.recipe.update({
         data: {
           ...recipe,

@@ -50,7 +50,6 @@ model CategoriesOnRecipes {
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId String // relation scalar field (used in the `@relation` attribute above)
   assignedAt DateTime @default(now())
-  assignedBy String
 
   @@id([recipeId, categoryId])
 }

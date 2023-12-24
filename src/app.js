@@ -6,6 +6,7 @@ import { serveSwagger } from './swagger.js'
 import { userRouter } from './routes/user.routes.js'
 import { recipeRouter } from './routes/recipe.routes.js'
 import { imageRouter } from './routes/image.routes.js'
+import { categoryRouter } from './routes/category.routes.js'
 
 const port = process.env.PORT || 3000
 const app = express()
@@ -30,4 +31,5 @@ app.listen(port, () => {
 // ROUTES
 app.use('/users', userRouter)
 app.use('/recipes', recipeRouter)
+app.use('/categories', categoryRouter)
 app.use('/images', imageRouter)

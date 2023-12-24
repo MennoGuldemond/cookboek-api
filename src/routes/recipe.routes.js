@@ -58,7 +58,7 @@ recipeRouter.post('/', isAuthorized, async (req, res) => {
     if (res.locals.auth.sub !== req.body.authorId) {
       return res.status(401).send('UnAuthorized')
     }
-    let recipe = await recipeRepository.upsert(req.body)
+    let recipe = await recipeRepository.upsert(req.body, res.locals.auth.sub)
     if (recipe) {
       return res.status(200).json(recipe)
     } else {
