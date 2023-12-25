@@ -8,8 +8,8 @@ categoryRouter.use(bodyParser.json())
 
 categoryRouter.get('/', async (req, res) => {
   try {
-    let recipes = await categoryRepository.get()
-    res.status(200).json(recipes)
+    let categories = await categoryRepository.get()
+    res.status(200).json(categories)
   } catch (error) {
     res.status(500).json(error)
   }
@@ -17,9 +17,9 @@ categoryRouter.get('/', async (req, res) => {
 
 categoryRouter.get('/:id', async (req, res) => {
   try {
-    let recipe = await categoryRepository.getById(req.params.id)
-    if (recipe) {
-      res.status(200).json(recipe)
+    let category = await categoryRepository.getById(req.params.id)
+    if (category) {
+      res.status(200).json(category)
     } else {
       res.status(404)
     }
@@ -30,9 +30,9 @@ categoryRouter.get('/:id', async (req, res) => {
 
 categoryRouter.post('/', isAuthorized, async (req, res) => {
   try {
-    let recipe = await categoryRepository.upsert(req.body)
-    if (recipe) {
-      return res.status(200).json(recipe)
+    let category = await categoryRepository.upsert(req.body)
+    if (category) {
+      return res.status(200).json(category)
     } else {
       return res.status(404)
     }
