@@ -36,7 +36,6 @@ export async function getById(id) {
 
 export async function create(like) {
   try {
-    console.log(like)
     const saved = await prisma.likes.create({
       data: {
         ...like,

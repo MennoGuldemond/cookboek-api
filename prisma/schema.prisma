@@ -73,10 +73,10 @@ model Log {
 }
 
 view RecipeInfo {
-  id         String   @unique
-  title      String
-  likes      Int
-  authorName String
-  photoURL   String
-  createdAt  DateTime
+  id            String   @unique
+  title         String
+  numberOfLikes Int
+  authorName    String
+  photoURL      String
+  createdAt     DateTime
 }

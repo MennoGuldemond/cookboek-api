@@ -16,7 +16,7 @@ export async function get() {
 
 export async function getNewest() {
   try {
-    const recipe = await prisma.recipe.findFirst({ orderBy: { createdAt: 'desc' }, include: { author: true } })
+    const recipe = await prisma.recipeInfo.findFirst({ orderBy: { createdAt: 'desc' } })
     await prisma.$disconnect()
     return recipe
   } catch (err) {
