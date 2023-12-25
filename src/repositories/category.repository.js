@@ -7,7 +7,7 @@ export async function get() {
     await prisma.$disconnect()
     return categories
   } catch (err) {
-    logService.error(err)
+    logService.error(JSON.stringify(err))
     await prisma.$disconnect()
   }
 }
@@ -18,7 +18,7 @@ export async function getById(id) {
     await prisma.$disconnect()
     return category
   } catch (err) {
-    logService.error(err)
+    logService.error(JSON.stringify(err))
     await prisma.$disconnect()
   }
 }
@@ -46,7 +46,7 @@ export async function upsert(category) {
     await prisma.$disconnect()
     return existingCategory
   } catch (err) {
-    logService.error(err)
+    logService.error(JSON.stringify(err))
     await prisma.$disconnect()
   }
 }
@@ -61,7 +61,7 @@ export async function remove(categoryId) {
     await prisma.$disconnect()
     return true
   } catch (err) {
-    logService.error(err)
+    logService.error(JSON.stringify(err))
     await prisma.$disconnect()
     return false
   }

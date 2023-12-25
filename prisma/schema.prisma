@@ -38,20 +38,21 @@ model Recipe {
 
 model Category {
   id          String                @id @default(uuid())
-  name        String
+  name        String                @unique
   description String
   recipes     CategoriesOnRecipes[]
   createdAt   DateTime              @default(now())
 }
 
 model CategoriesOnRecipes {
+  id         String   @id @default(uuid())
   recipe     Recipe   @relation(fields: [recipeId], references: [id])
   recipeId   String // relation scalar field (used in the `@relation` attribute above)
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId String // relation scalar field (used in the `@relation` attribute above)
   assignedAt DateTime @default(now())
 
-  @@id([recipeId, categoryId])
+  @@unique([recipeId, categoryId])
 }
 
 model Log {

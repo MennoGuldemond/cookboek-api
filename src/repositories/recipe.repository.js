@@ -9,7 +9,7 @@ export async function get() {
     await prisma.$disconnect()
     return recipes
   } catch (err) {
-    logService.error(err)
+    logService.error(JSON.stringify(err))
     await prisma.$disconnect()
   }
 }
@@ -20,7 +20,7 @@ export async function getNewest() {
     await prisma.$disconnect()
     return recipe
   } catch (err) {
-    logService.error(err)
+    logService.error(JSON.stringify(err))
     await prisma.$disconnect()
   }
 }
@@ -31,7 +31,7 @@ export async function getById(id) {
     await prisma.$disconnect()
     return recipe
   } catch (err) {
-    logService.error(err)
+    logService.error(JSON.stringify(err))
     await prisma.$disconnect()
   }
 }
@@ -40,26 +40,79 @@ export async function upsert(recipe, userId) {
   try {
     let savedRecipe = null
     if (recipe.id) {
-      const existingRecipe = await prisma.recipe.findUnique({ where: { id: recipe.id, authorId: userId } })
+      const existingRecipe = await prisma.recipe.findUnique({
+        where: { id: recipe.id, authorId: userId },
+        include: { categories: true },
+      })
       if (!existingRecipe) {
         throw new Error(`upsert of recipe: ${recipe.id} by user:${userId} had no result, might be unauthorized.`)
       }
+
+      const toCreate = recipe.categories.filter((rc) => {
+        if (!existingRecipe.categories.find((ec) => ec.categoryId === rc.id)) {
+          return true
+        }
+      })
+      const createCategories = toCreate.map((c) => {
+        return {
+          category: {
+            connect: {
+              id: c.id,
+            },
+          },
+        }
+      })
+
+      const toDelete = existingRecipe.categories.filter((ec) => {
+        if (!recipe.categories.find((rc) => rc.id === ec.categoryId)) {
+          return true
+        }
+      })
+      toDelete.forEach(async (cr) => {
+        await prisma.categoriesOnRecipes.delete({
+          where: {
+            id: cr.id,
+          },
+        })
+      })
+
+      // Only update the values that can be updated
       savedRecipe = await prisma.recipe.update({
         data: {
-          ...recipe,
+          title: recipe.title,
+          description: recipe.description,
+          ingredients: recipe.ingredients,
+          instructions: recipe.instructions,
+          photoURL: recipe.photoURL,
+          published: recipe.published,
+          categories: {
+            create: createCategories,
+          },
         },
+        where: { id: recipe.id, authorId: userId },
       })
     } else {
       savedRecipe = await prisma.recipe.create({
         data: {
           ...recipe,
+          categories: {
+            create: recipe.categories.map((c) => {
+              return {
+                category: {
+                  connect: {
+                    id: c.id,
+                  },
+                },
+              }
+            }),
+          },
         },
       })
     }
     await prisma.$disconnect()
     return savedRecipe
   } catch (err) {
-    logService.error(err)
+    logService.error(JSON.stringify(err))
     await prisma.$disconnect()
   }
 }
@@ -80,7 +133,7 @@ export async function remove(recipeId, userId) {
     await prisma.$disconnect()
     return true
   } catch (err) {
-    logService.error(err)
+    logService.error(JSON.stringify(err))
     await prisma.$disconnect()
     return false
   }
