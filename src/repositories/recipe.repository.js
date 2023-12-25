@@ -3,14 +3,33 @@ import { unlink } from 'node:fs/promises'
 import { prisma } from '../db/client.js'
 import * as logService from '../services/log.service.js'
 
-export async function get() {
+export async function get(params) {
   try {
-    const recipes = await prisma.recipeInfo.findMany({ orderBy: { createdAt: 'desc' }, take: 30 })
+    // Default pagination settings if query params are not provided
+    const skip = params.skip || 0
+    const take = params.take || 30
+    // const categoryIds = params.categoryIds || []
+    const authorId = params.authorId
+    const name = params.name
+
+    const recipes = await prisma.recipeInfo.findMany({
+      orderBy: { createdAt: 'desc' },
+      where: {
+        title: {
+          contains: name,
+        },
+        AND: {
+          authorId: authorId,
+        },
+      },
+      take: take,
+      skip: skip,
+    })
     await prisma.$disconnect()
     return recipes
   } catch (err) {
     logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    return await prisma.$disconnect()
   }
 }
 
@@ -21,7 +40,7 @@ export async function getNewest() {
     return recipe
   } catch (err) {
     logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    return await prisma.$disconnect()
   }
 }
 
@@ -116,7 +135,7 @@ export async function upsert(recipe, userId) {
     return savedRecipe
   } catch (err) {
     logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    return await prisma.$disconnect()
   }
 }
 

@@ -6,25 +6,9 @@ import { isAuthorized } from '../auth.js'
 export const recipeRouter = express.Router()
 recipeRouter.use(bodyParser.json())
 
-/**
- * @swagger
- * /recipes:
- *   get:
- *     summary: Returns all recipes
- *     tags: [Recipes]
- *     responses:
- *       200:
- *         description: the list of recipes
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/prisma/'
- */
 recipeRouter.get('/', async (req, res) => {
   try {
-    let recipes = await recipeRepository.get()
+    let recipes = await recipeRepository.get(req.query)
     res.status(200).json(recipes)
   } catch (error) {
     res.status(500).json(error)
