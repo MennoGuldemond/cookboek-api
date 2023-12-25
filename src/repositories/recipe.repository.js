@@ -7,8 +7,8 @@ export async function get(params) {
   try {
     // Default pagination settings if query params are not provided
     // TODO: set max vales
-    const skip = params.skip || 0
-    const take = params.take || 30
+    const skip = params?.skip ? +params.skip : 0
+    const take = params?.take ? +params.take : 30
     // const categoryIds = params.categoryIds || []
     const authorId = params.authorId
     const name = params.name
