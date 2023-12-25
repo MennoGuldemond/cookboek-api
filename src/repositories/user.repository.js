@@ -8,7 +8,7 @@ export async function getAll() {
     return users
   } catch (err) {
     logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    return await prisma.$disconnect()
   }
 }
 
@@ -21,7 +21,7 @@ export async function getById(id) {
     })
     .catch(async (err) => {
       logService.error(JSON.stringify(err))
-      await prisma.$disconnect()
+      return await prisma.$disconnect()
     })
 }
 
@@ -34,7 +34,7 @@ export async function getByEmail(email) {
     })
     .catch(async (err) => {
       logService.error(JSON.stringify(err))
-      await prisma.$disconnect()
+      return await prisma.$disconnect()
     })
 }
 
@@ -61,6 +61,6 @@ export async function create(userProfile) {
     return newUser
   } catch (err) {
     logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    return await prisma.$disconnect()
   }
 }

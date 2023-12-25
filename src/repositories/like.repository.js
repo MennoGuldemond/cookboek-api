@@ -8,7 +8,7 @@ export async function getByUserId(userId) {
     return likes
   } catch (err) {
     logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    return await prisma.$disconnect()
   }
 }
 
@@ -19,7 +19,7 @@ export async function getByRecipeId(recipeId) {
     return likes
   } catch (err) {
     logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    return await prisma.$disconnect()
   }
 }
 
@@ -30,20 +30,22 @@ export async function getById(id) {
     return like
   } catch (err) {
     logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    return await prisma.$disconnect()
   }
 }
 
 export async function create(like) {
   try {
-    await prisma.category.create({
+    console.log(like)
+    const saved = await prisma.likes.create({
       data: {
         ...like,
       },
     })
+    return saved
   } catch (err) {
     logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    return await prisma.$disconnect()
   }
 }
 

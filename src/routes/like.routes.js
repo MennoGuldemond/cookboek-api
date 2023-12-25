@@ -15,7 +15,7 @@ likeRouter.get('/recipe/:recipeId', async (req, res) => {
   }
 })
 
-likeRouter.get('/user/:userId', async (req, res) => {
+likeRouter.get('/user/:userId', isAuthorized, async (req, res) => {
   try {
     let likes = await likeRepository.getByUserId(req.params.userId)
     res.status(200).json(likes)
@@ -24,7 +24,7 @@ likeRouter.get('/user/:userId', async (req, res) => {
   }
 })
 
-likeRouter.get('/:id', async (req, res) => {
+likeRouter.get('/:id', isAuthorized, async (req, res) => {
   try {
     let like = await likeRepository.getById(req.params.id)
     if (like) {

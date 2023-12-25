@@ -8,7 +8,7 @@ export async function get() {
     return categories
   } catch (err) {
     logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    return await prisma.$disconnect()
   }
 }
 
@@ -19,7 +19,7 @@ export async function getById(id) {
     return category
   } catch (err) {
     logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    return await prisma.$disconnect()
   }
 }
 
@@ -47,7 +47,7 @@ export async function upsert(category) {
     return existingCategory
   } catch (err) {
     logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    return await prisma.$disconnect()
   }
 }
 

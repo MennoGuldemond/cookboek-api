@@ -34,7 +34,7 @@ model Recipe {
   authorId     String
   categories   CategoriesOnRecipes[]
   createdAt    DateTime              @default(now())
-  Likes        Likes[]
+  likes        Likes[]
 }
 
 model Category {

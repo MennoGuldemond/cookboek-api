@@ -27,7 +27,10 @@ export async function getNewest() {
 
 export async function getById(id) {
   try {
-    const recipe = await prisma.recipe.findUnique({ where: { id: id }, include: { author: true, categories: true } })
+    const recipe = await prisma.recipe.findUnique({
+      where: { id: id },
+      include: { author: true, categories: true, likes: true },
+    })
     await prisma.$disconnect()
     return recipe
   } catch (err) {

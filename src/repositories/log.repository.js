@@ -12,6 +12,6 @@ export async function create(message, level) {
     return log
   } catch (err) {
     console.error(err)
-    await prisma.$disconnect()
+    return await prisma.$disconnect()
   }
 }
