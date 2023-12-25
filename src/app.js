@@ -7,6 +7,7 @@ import { userRouter } from './routes/user.routes.js'
 import { recipeRouter } from './routes/recipe.routes.js'
 import { imageRouter } from './routes/image.routes.js'
 import { categoryRouter } from './routes/category.routes.js'
+import { likeRouter } from './routes/like.routes.js'
 
 const port = process.env.PORT || 3000
 const app = express()
@@ -32,4 +33,5 @@ app.listen(port, () => {
 app.use('/users', userRouter)
 app.use('/recipes', recipeRouter)
 app.use('/categories', categoryRouter)
+app.use('/likes', likeRouter)
 app.use('/images', imageRouter)
