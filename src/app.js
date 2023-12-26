@@ -3,6 +3,8 @@ import express from 'express'
 import session from 'express-session'
 import cors from 'cors'
 import path from 'path'
+import fs from 'fs'
+import https from 'https'
 import * as url from 'url'
 import { serveSwagger } from './swagger.js'
 import { userRouter } from './routes/user.routes.js'
@@ -12,6 +14,11 @@ import { categoryRouter } from './routes/category.routes.js'
 import { likeRouter } from './routes/like.routes.js'
 
 const __dirname = url.fileURLToPath(new URL('../', import.meta.url))
+
+// const credentials = {
+//   key: fs.readFileSync(path.join(__dirname, 'ssl/privkey.pem'), 'utf8'),
+//   cert: fs.readFileSync(path.join(__dirname, 'ssl/cert.csr'), 'utf8'),
+// }
 
 const port = process.env.PORT || 3000
 const app = express()
@@ -28,6 +35,16 @@ app.use(
     secret: 'SECRET',
   })
 )
+
+// https
+//   .createServer(
+//     {
+//       key: credentials.key,
+//       cert: credentials.cert,
+//     },
+//     app
+//   )
+//   .listen(port)
 
 app.listen(port, () => {
   console.log(`App running on ${port}`)
