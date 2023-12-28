@@ -20,7 +20,7 @@ const upload = multer({ storage: storage })
 imageRouter.post('/upload', isAuthorized, upload.single('file'), function (req, res) {
   // req.file is the `profile-file` file
   //   console.log(req.file)
-  let imageUrl = req.protocol + '://' + req.get('host') + '/images/'
+  let imageUrl = req.protocol + '://' + req.get('host') + 'public/images/'
   return res.status(200).send({
     photoURL: imageUrl + req.file.filename,
   })
