@@ -15,10 +15,10 @@ import { likeRouter } from './routes/like.routes.js'
 
 const __dirname = url.fileURLToPath(new URL('../', import.meta.url))
 
-// const credentials = {
-//   key: fs.readFileSync(path.join(__dirname, 'ssl/privkey.pem'), 'utf8'),
-//   cert: fs.readFileSync(path.join(__dirname, 'ssl/cert.csr'), 'utf8'),
-// }
+const credentials = {
+  key: fs.readFileSync(path.join('/etc/letsencrypt/live/cookboek.hopto.org', 'privkey.pem'), 'utf8'),
+  cert: fs.readFileSync(path.join('/etc/letsencrypt/live/cookboek.hopto.org', 'cert.pem'), 'utf8'),
+}
 
 const port = process.env.PORT || 3000
 const app = express()
@@ -36,19 +36,21 @@ app.use(
   })
 )
 
-// https
-//   .createServer(
-//     {
-//       key: credentials.key,
-//       cert: credentials.cert,
-//     },
-//     app
-//   )
-//   .listen(port)
+https
+  .createServer(
+    {
+      key: credentials.key,
+      cert: credentials.cert,
+    },
+    app
+  )
+  .listen(port, () => {
+    console.log(`App running on ${port}`)
+  })
 
-app.listen(port, () => {
-  console.log(`App running on ${port}`)
-})
+// app.listen(port, () => {
+//   console.log(`App running on ${port}`)
+// })
 
 app.get('/', (req, res) => {
   res.sendFile('./public/dist/index.html', { root: __dirname })
