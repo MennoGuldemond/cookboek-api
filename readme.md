@@ -1,3 +1,12 @@
+## Cookbook API
+
+The repository contains the rest api project for the cookbook webapp.
+This project makes use of:
+
+- Express
+- Prisma
+- Google Auth
+
 ## Installation steps
 
 1. run 'npm install'
