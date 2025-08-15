@@ -106,7 +106,7 @@ export async function upsert(recipe, userId) {
           description: recipe.description,
           ingredients: recipe.ingredients,
           instructions: recipe.instructions,
-          photoURL: recipe.photoURL,
+          photoURL: recipe.photoURL.replace(/\s+/g, ''),
           published: recipe.published,
           categories: {
             create: createCategories,
@@ -118,6 +118,7 @@ export async function upsert(recipe, userId) {
       savedRecipe = await prisma.recipe.create({
         data: {
           ...recipe,
+          photoURL: recipe.photoURL.replace(/\s+/g, ''),
           categories: {
             create: recipe.categories.map((c) => {
               return {
