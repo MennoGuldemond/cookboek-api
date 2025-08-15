@@ -12,11 +12,9 @@ const storage = multer.diskStorage({
     cb(null, './public/images')
   },
   filename: function (req, file, cb) {
-    cb(
-      null,
-      path.parse(file.originalname).name.filename.replace(/\s+/g, ''),
-      +'-' + Date.now() + path.extname(file.originalname)
-    )
+    // Remove spaces from the original filename
+    file.originalname = file.originalname.replace(/\s+/g, '')
+    cb(null, path.parse(file.originalname).name + '-' + Date.now() + path.extname(file.originalname))
   },
 })
 const upload = multer({ storage: storage })

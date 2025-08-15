@@ -81,3 +81,9 @@ view RecipeInfo {
   photoURL      String
   createdAt     DateTime
 }
+
+view UserInfo {
+  id              String   @unique
+  numberOfRecipes Int
+  numberOfLikes   Int
+}

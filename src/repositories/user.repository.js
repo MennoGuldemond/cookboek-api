@@ -64,3 +64,16 @@ export async function create(userProfile) {
     return await prisma.$disconnect()
   }
 }
+
+export async function getInfo(id) {
+  try {
+    const userInfo = await prisma.userInfo.findUnique({
+      where: { id: id },
+    })
+    await prisma.$disconnect()
+    return userInfo
+  } catch (err) {
+    logService.error(JSON.stringify(err))
+    return await prisma.$disconnect()
+  }
+}

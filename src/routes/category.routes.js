@@ -19,12 +19,12 @@ categoryRouter.get('/:id', async (req, res) => {
   try {
     let category = await categoryRepository.getById(req.params.id)
     if (category) {
-      res.status(200).json(category)
+      return res.status(200).json(category)
     } else {
-      res.status(404)
+      return res.status(404)
     }
   } catch (error) {
-    res.status(500).json(error)
+    return res.status(500).json(error)
   }
 })
 
@@ -37,7 +37,7 @@ categoryRouter.post('/', isAuthorized, async (req, res) => {
       return res.status(404)
     }
   } catch (error) {
-    res.status(500).json(error)
+    return res.status(500).json(error)
   }
 })
 
@@ -50,6 +50,6 @@ categoryRouter.delete('/:id', isAuthorized, async (req, res) => {
       return res.status(500).send(false)
     }
   } catch (error) {
-    res.status(500).json(error)
+    return res.status(500).json(error)
   }
 })

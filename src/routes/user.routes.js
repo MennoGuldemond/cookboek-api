@@ -6,25 +6,16 @@ import { isAuthorized } from '../auth.js'
 export const userRouter = express.Router()
 userRouter.use(bodyParser.json())
 
-// userRouter.get('/', isAuthorized, async (req, res) => {
-//   try {
-//     const users = await userService.getAll()
-//     res.status(200).json(users)
-//   } catch (error) {
-//     res.status(500).json(error)
-//   }
-// })
-
 userRouter.get('/:email', isAuthorized, async (req, res) => {
   try {
     const user = await userService.getByEmail(req.params.email)
     if (user) {
-      res.status(200).json(user)
+      return res.status(200).json(user)
     } else {
-      res.status(404)
+      return res.status(404)
     }
   } catch (error) {
-    res.status(500).json(error)
+    return res.status(500).json(error)
   }
 })
 
@@ -33,11 +24,24 @@ userRouter.get('/', isAuthorized, async (req, res) => {
     const userProfile = res.locals.auth
     const user = await userService.findOrCreate(userProfile)
     if (user) {
-      res.status(200).json(user)
+      return res.status(200).json(user)
     } else {
-      res.status(404)
+      return res.status(404)
     }
   } catch (error) {
-    res.status(500).json(error)
+    return res.status(500).json(error)
+  }
+})
+
+userRouter.get('/info/:id', isAuthorized, async (req, res) => {
+  try {
+    const userInfo = await userService.getInfo(req.params.id)
+    if (userInfo) {
+      return res.status(200).json(userInfo)
+    } else {
+      return res.status(404)
+    }
+  } catch (error) {
+    return res.status(500).json(error)
   }
 })

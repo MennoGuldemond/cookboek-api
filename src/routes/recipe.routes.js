@@ -9,18 +9,18 @@ recipeRouter.use(bodyParser.json())
 recipeRouter.get('/', async (req, res) => {
   try {
     let recipes = await recipeRepository.get(req.query)
-    res.status(200).json(recipes)
+    return res.status(200).json(recipes)
   } catch (error) {
-    res.status(500).json(error)
+    return res.status(500).json(error)
   }
 })
 
 recipeRouter.get('/newest', async (req, res) => {
   try {
     let recipe = await recipeRepository.getNewest()
-    res.status(200).json(recipe)
+    return res.status(200).json(recipe)
   } catch (error) {
-    res.status(500).json(error)
+    return res.status(500).json(error)
   }
 })
 
@@ -28,12 +28,12 @@ recipeRouter.get('/:id', async (req, res) => {
   try {
     let recipe = await recipeRepository.getById(req.params.id)
     if (recipe) {
-      res.status(200).json(recipe)
+      return res.status(200).json(recipe)
     } else {
-      res.status(404)
+      return res.status(404)
     }
   } catch (error) {
-    res.status(500).json(error)
+    return res.status(500).json(error)
   }
 })
 
@@ -49,7 +49,7 @@ recipeRouter.post('/', isAuthorized, async (req, res) => {
       return res.status(404)
     }
   } catch (error) {
-    res.status(500).json(error)
+    return res.status(500).json(error)
   }
 })
 
@@ -62,6 +62,6 @@ recipeRouter.delete('/:id', isAuthorized, async (req, res) => {
       return res.status(500).send(false)
     }
   } catch (error) {
-    res.status(500).json(error)
+    return res.status(500).json(error)
   }
 })

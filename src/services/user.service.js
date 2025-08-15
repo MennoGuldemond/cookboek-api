@@ -19,3 +19,7 @@ export async function create(userProfile) {
 export async function findOrCreate(userProfile) {
   return await userRepository.findOrCreate(userProfile)
 }
+
+export async function getInfo(id) {
+  return await userRepository.getInfo(id)
+}

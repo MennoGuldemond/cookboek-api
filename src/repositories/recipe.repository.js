@@ -120,7 +120,7 @@ export async function upsert(recipe, userId) {
           ...recipe,
           photoURL: recipe.photoURL.replace(/\s+/g, ''),
           categories: {
-            create: recipe.categories.map((c) => {
+            create: recipe.categories?.map((c) => {
               return {
                 category: {
                   connect: {
