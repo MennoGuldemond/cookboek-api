@@ -15,4 +15,9 @@ This project makes use of:
    - DATABASE_URL=""
    - PORT=3000
    - GOOGLE_CLIENT_ID=""
+1. To set the Google CliendId:
+   - Navigate to "APIs & Services" > "Credentials".
+   - Look for the "OAuth 2.0 Client IDs" section.
+   - Find the client you use for your app
+   - Copy the "Client ID" value—this is what you should set as GOOGLE_CLIENT_ID in your .env file.
 1. run 'npm run prisma-push' to populate the database
