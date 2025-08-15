@@ -21,3 +21,5 @@ This project makes use of:
    - Find the client you use for your app
    - Copy the "Client ID" value—this is what you should set as GOOGLE_CLIENT_ID in your .env file.
 1. run 'npm run prisma-push' to populate the database
+1. Create a 'public' folder in the root of the project.
+1. Create a 'images' folder inside that public folder.
