@@ -9,7 +9,7 @@ This project makes use of:
 
 ## Installation steps
 
-1. run 'npm install'
+1. Run 'npm install'
 1. Make sure a mysql database is running on your computer
 1. Create a .env file in the root with the following properties:
    - DATABASE_URL=""
@@ -20,6 +20,7 @@ This project makes use of:
    - Look for the "OAuth 2.0 Client IDs" section.
    - Find the client you use for your app
    - Copy the "Client ID" value—this is what you should set as GOOGLE_CLIENT_ID in your .env file.
-1. run 'npm run prisma-push' to populate the database
+1. Run 'npm run prisma-push' to populate the database
+1. For now, create te views by sql script yourself.
 1. Create a 'public' folder in the root of the project.
 1. Create a 'images' folder inside that public folder.
