@@ -12,9 +12,15 @@ LEFT JOIN Likes l ON l.recipeId = r.id
 LEFT JOIN User u ON r.authorId = u.id
 GROUP BY r.id, r.title, u.name, r.authorId, r.photoURL, r.createdAt;
 
+
 CREATE OR REPLACE VIEW UserInfo AS
 SELECT
   u.id AS id,
+  u.email AS email,
+  u.name AS name,
+  u.photoUrl AS photoUrl,
+  u.provider AS provider,
+  u.createdAt AS createdAt,
   COUNT(DISTINCT r.id) AS numberOfRecipes,
   COUNT(DISTINCT l.id) AS numberOfLikes
 FROM User u

@@ -23,8 +23,9 @@ userRouter.get('/', isAuthorized, async (req, res) => {
   try {
     const userProfile = res.locals.auth
     const user = await userService.findOrCreate(userProfile)
-    if (user) {
-      return res.status(200).json(user)
+    const userInfo = await userService.getById(user.id)
+    if (userInfo) {
+      return res.status(200).json(userInfo)
     } else {
       return res.status(404)
     }
@@ -33,9 +34,9 @@ userRouter.get('/', isAuthorized, async (req, res) => {
   }
 })
 
-userRouter.get('/info/:id', isAuthorized, async (req, res) => {
+userRouter.get('/:id', isAuthorized, async (req, res) => {
   try {
-    const userInfo = await userService.getInfo(req.params.id)
+    const userInfo = await userService.getById(req.params.id)
     if (userInfo) {
       return res.status(200).json(userInfo)
     } else {

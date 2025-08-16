@@ -13,16 +13,16 @@ export async function getAll() {
 }
 
 export async function getById(id) {
-  return prisma.user
-    .findUnique({ where: { id: id } })
-    .then(async (user) => {
-      await prisma.$disconnect()
-      return user
+  try {
+    const userInfo = await prisma.userInfo.findUnique({
+      where: { id: id },
     })
-    .catch(async (err) => {
-      logService.error(JSON.stringify(err))
-      return await prisma.$disconnect()
-    })
+    await prisma.$disconnect()
+    return userInfo
+  } catch (err) {
+    logService.error(JSON.stringify(err))
+    return await prisma.$disconnect()
+  }
 }
 
 export async function getByEmail(email) {
@@ -59,19 +59,6 @@ export async function create(userProfile) {
     })
     await prisma.$disconnect()
     return newUser
-  } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
-  }
-}
-
-export async function getInfo(id) {
-  try {
-    const userInfo = await prisma.userInfo.findUnique({
-      where: { id: id },
-    })
-    await prisma.$disconnect()
-    return userInfo
   } catch (err) {
     logService.error(JSON.stringify(err))
     return await prisma.$disconnect()
