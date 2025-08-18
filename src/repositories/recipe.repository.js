@@ -3,6 +3,11 @@ import { unlink } from 'node:fs/promises'
 import { prisma } from '../db/client.js'
 import * as logService from '../services/log.service.js'
 
+/**
+ * Get recipes from the RecipeInfo view with optional filters and pagination
+ * @param {Object} params - Query parameters (skip, take, authorId, name)
+ * @returns {Promise<Array>} - Array of RecipeInfo objects
+ */
 export async function get(params) {
   try {
     // Default pagination settings if query params are not provided
@@ -34,6 +39,10 @@ export async function get(params) {
   }
 }
 
+/**
+ * Get the newest recipe from the RecipeInfo view
+ * @returns {Promise<Object|null>} - The newest RecipeInfo object or null
+ */
 export async function getNewest() {
   try {
     const recipe = await prisma.recipeInfo.findFirst({ orderBy: { createdAt: 'desc' } })
@@ -45,6 +54,11 @@ export async function getNewest() {
   }
 }
 
+/**
+ * Get a recipe by its ID, including author, categories, and likes
+ * @param {string} id - The ID of the recipe
+ * @returns {Promise<Object|null>} - The recipe object or null
+ */
 export async function getById(id) {
   try {
     const recipe = await prisma.recipe.findUnique({
@@ -59,6 +73,41 @@ export async function getById(id) {
   }
 }
 
+/**
+ * Get all RecipeInfo view rows for recipes liked by a specific user
+ * @param {string} userId - The ID of the user
+ * @returns {Promise<Array>} - Array of RecipeInfo objects
+ */
+export async function getLikedRecipesByUser(userId) {
+  try {
+    const likedRecipeIds = await prisma.likes.findMany({
+      where: { userId },
+      select: { recipeId: true },
+    })
+    const recipeIds = likedRecipeIds.map((like) => like.recipeId)
+    if (recipeIds.length === 0) {
+      await prisma.$disconnect()
+      return []
+    }
+    const recipes = await prisma.recipeInfo.findMany({
+      where: {
+        id: { in: recipeIds },
+      },
+    })
+    await prisma.$disconnect()
+    return recipes
+  } catch (err) {
+    logService.error(JSON.stringify(err))
+    return await prisma.$disconnect()
+  }
+}
+
+/**
+ * Create or update a recipe, including category relations
+ * @param {Object} recipe - The recipe data
+ * @param {string} userId - The ID of the author
+ * @returns {Promise<Object>} - The saved recipe object
+ */
 export async function upsert(recipe, userId) {
   try {
     let savedRecipe = null
@@ -141,6 +190,12 @@ export async function upsert(recipe, userId) {
   }
 }
 
+/**
+ * Remove a recipe by ID and author, and delete its image file
+ * @param {string} recipeId - The ID of the recipe
+ * @param {string} userId - The ID of the author
+ * @returns {Promise<boolean>} - True if removed, false otherwise
+ */
 export async function remove(recipeId, userId) {
   try {
     const recipe = await prisma.recipe.findUnique({ where: { id: recipeId, authorId: userId } })
