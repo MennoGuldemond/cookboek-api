@@ -83,12 +83,13 @@ view RecipeInfo {
 }
 
 view UserInfo {
-  id              String   @unique
-  email           String   @unique
-  name            String?
-  photoUrl        String?
-  provider        String?
-  createdAt       DateTime
-  numberOfRecipes Int
-  numberOfLikes   Int
+  id                    String   @unique
+  email                 String   @unique
+  name                  String?
+  photoUrl              String?
+  provider              String?
+  createdAt             DateTime
+  numberOfRecipes       Int
+  numberOfLikesGiven    Int
+  numberOfLikesReceived Int
 }

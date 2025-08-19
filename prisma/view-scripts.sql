@@ -22,7 +22,13 @@ SELECT
   u.provider AS provider,
   u.createdAt AS createdAt,
   COUNT(DISTINCT r.id) AS numberOfRecipes,
-  COUNT(DISTINCT l.id) AS numberOfLikes
+  COUNT(DISTINCT l.id) AS numberOfLikesGiven,
+  (
+    SELECT COUNT(*)
+    FROM Likes l2
+    JOIN Recipe r2 ON l2.recipeId = r2.id
+    WHERE r2.authorId = u.id
+  ) AS numberOfLikesReceived
 FROM User u
 LEFT JOIN Recipe r ON r.authorId = u.id
 LEFT JOIN Likes l ON l.userId = u.id
