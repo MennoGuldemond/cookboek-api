@@ -26,7 +26,6 @@ recipeRouter.get('/newest', async (req, res) => {
 
 recipeRouter.get('/liked', isAuthorized, async (req, res) => {
   try {
-    console.log('Fetching liked recipes for user:', res.locals.auth.sub)
     const userId = res.locals.auth.sub
     let recipe = await recipeRepository.getLikedRecipesByUser(userId)
     if (recipe) {
