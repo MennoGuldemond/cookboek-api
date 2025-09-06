@@ -11,6 +11,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model User {
   id        String   @id
   email     String   @unique
@@ -20,6 +25,7 @@ model User {
   provider  String?
   createdAt DateTime @default(now())
   Likes     Likes[]
+  role      UserRole @default(USER)
 }
 
 model Recipe {
@@ -89,6 +95,7 @@ view UserInfo {
   photoUrl              String?
   provider              String?
   createdAt             DateTime
+  role                  String
   numberOfRecipes       Int
   numberOfLikesGiven    Int
   numberOfLikesReceived Int

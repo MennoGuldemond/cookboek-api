@@ -12,6 +12,7 @@ import { recipeRouter } from './routes/recipe.routes.js'
 import { imageRouter } from './routes/image.routes.js'
 import { categoryRouter } from './routes/category.routes.js'
 import { likeRouter } from './routes/like.routes.js'
+import { logRouter } from './routes/log.routes.js'
 
 const __dirname = url.fileURLToPath(new URL('../', import.meta.url))
 
@@ -64,3 +65,4 @@ app.use('/recipes', recipeRouter)
 app.use('/categories', categoryRouter)
 app.use('/likes', likeRouter)
 app.use('/images', imageRouter)
+app.use('/logs', logRouter)

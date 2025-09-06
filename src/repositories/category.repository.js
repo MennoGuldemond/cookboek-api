@@ -27,7 +27,7 @@ export async function upsert(category) {
   try {
     let existingCategory = null
     if (category.id) {
-      const existingCategory = await prisma.category.findUnique({ where: { id: category.id } })
+      existingCategory = await prisma.category.findUnique({ where: { id: category.id } })
       if (!existingCategory) {
         throw new Error(`upsert of category: ${category.id} had no result.`)
       }
@@ -35,6 +35,7 @@ export async function upsert(category) {
         data: {
           ...category,
         },
+        where: { id: category.id },
       })
     } else {
       existingCategory = await prisma.category.create({

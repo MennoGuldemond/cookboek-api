@@ -21,6 +21,7 @@ SELECT
   u.photoUrl AS photoUrl,
   u.provider AS provider,
   u.createdAt AS createdAt,
+  u.role AS role,
   COUNT(DISTINCT r.id) AS numberOfRecipes,
   COUNT(DISTINCT l.id) AS numberOfLikesGiven,
   (
@@ -32,4 +33,4 @@ SELECT
 FROM User u
 LEFT JOIN Recipe r ON r.authorId = u.id
 LEFT JOIN Likes l ON l.userId = u.id
-GROUP BY u.id;
+GROUP BY u.id, u.email, u.name, u.photoUrl, u.provider, u.createdAt, u.role;

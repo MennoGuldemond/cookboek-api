@@ -1,7 +1,7 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import * as categoryRepository from '../repositories/category.repository.js'
-import { isAuthorized } from '../auth.js'
+import { isAuthorized, isAdmin } from '../auth.js'
 
 export const categoryRouter = express.Router()
 categoryRouter.use(bodyParser.json())
@@ -28,7 +28,7 @@ categoryRouter.get('/:id', async (req, res) => {
   }
 })
 
-categoryRouter.post('/', isAuthorized, async (req, res) => {
+categoryRouter.post('/', isAuthorized, isAdmin, async (req, res) => {
   try {
     let category = await categoryRepository.upsert(req.body)
     if (category) {
@@ -41,7 +41,7 @@ categoryRouter.post('/', isAuthorized, async (req, res) => {
   }
 })
 
-categoryRouter.delete('/:id', isAuthorized, async (req, res) => {
+categoryRouter.delete('/:id', isAuthorized, isAdmin, async (req, res) => {
   try {
     let success = await categoryRepository.remove(req.params.id)
     if (success) {
