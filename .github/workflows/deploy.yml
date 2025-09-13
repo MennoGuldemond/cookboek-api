@@ -1,0 +1,8 @@
+- name: Run deploy script
+  uses: appleboy/ssh-action@v1.1.0
+  with:
+    host: ${{ secrets.PI_HOST }}
+    username: ${{ secrets.PI_USER }}
+    key: ${{ secrets.PI_SSH_KEY }}
+    script: |
+      ~/deploy.sh
