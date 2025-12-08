@@ -34,11 +34,11 @@ model Recipe {
   description  String                @db.VarChar(4000)
   photoURL     String
   instructions String                @db.VarChar(4000)
-  ingredients  String                @db.VarChar(4000)
   published    Boolean               @default(false)
   author       User                  @relation(fields: [authorId], references: [id])
   authorId     String
   categories   CategoriesOnRecipes[]
+  ingredients  IngredientsOnRecipes[]
   createdAt    DateTime              @default(now())
   likes        Likes[]
 }
@@ -69,6 +69,23 @@ model Likes {
   user       User     @relation(fields: [userId], references: [id])
   userId     String
   assignedAt DateTime @default(now())
+}
+
+model Ingredient {
+  id    String  @id @default(uuid())
+  name  String  @unique
+  recipes       IngredientsOnRecipes[]
+}
+
+model IngredientsOnRecipes {
+  id            String   @id @default(uuid())
+  recipe        Recipe   @relation(fields: [recipeId], references: [id])
+  recipeId      String // relation scalar field (used in the `@relation` attribute above)
+  ingredient    Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredientId  String // relation scalar field (used in the `@relation` attribute above)
+  assignedAt DateTime @default(now())
+
+  @@unique([recipeId, ingredientId])
 }
 
 model Log {

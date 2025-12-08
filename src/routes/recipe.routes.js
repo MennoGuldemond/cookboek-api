@@ -1,6 +1,7 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import * as recipeRepository from '../repositories/recipe.repository.js'
+import * as ingredientService from '../services/ingredient.service.js'
 import { isAuthorized } from '../auth.js'
 
 export const recipeRouter = express.Router()
@@ -53,11 +54,13 @@ recipeRouter.get('/:id', async (req, res) => {
 
 recipeRouter.post('/', isAuthorized, async (req, res) => {
   try {
+    // Check if the user is the author of the recipe
     if (res.locals.auth.sub !== req.body.authorId) {
       return res.status(401).send('UnAuthorized')
     }
     let recipe = await recipeRepository.upsert(req.body, res.locals.auth.sub)
     if (recipe) {
+      await ingredientService.processRecipe(recipe)
       return res.status(200).json(recipe)
     } else {
       return res.status(404)
