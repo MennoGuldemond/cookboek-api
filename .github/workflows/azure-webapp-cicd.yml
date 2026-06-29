@@ -25,6 +25,8 @@ permissions:
 env:
   NODE_VERSION: '20'
   TARGET_ENV: ${{ github.event_name == 'pull_request' && 'tst' || github.event_name == 'workflow_dispatch' && inputs.targetEnvironment || 'prd' }}
+  DEFAULT_WEBAPP_NAME_TST: cookboek-tst-api
+  DEFAULT_WEBAPP_NAME_PRD: cookboek-prd-api
   AZURE_WEBAPP_NAME_PRD: ${{ vars.AZURE_WEBAPP_NAME_PRD != '' && vars.AZURE_WEBAPP_NAME_PRD || secrets.AZURE_WEBAPP_NAME_PRD }}
   AZURE_WEBAPP_NAME_TST: ${{ vars.AZURE_WEBAPP_NAME_TST != '' && vars.AZURE_WEBAPP_NAME_TST || secrets.AZURE_WEBAPP_NAME_TST }}
   AZURE_WEBAPP_NAME_DEFAULT: ${{ vars.AZURE_WEBAPP_NAME != '' && vars.AZURE_WEBAPP_NAME || secrets.AZURE_WEBAPP_NAME }}
@@ -63,8 +65,14 @@ jobs:
         run: |
           if [ "${TARGET_ENV}" = "tst" ]; then
             SELECTED_NAME="${AZURE_WEBAPP_NAME_TST}"
+            if [ -z "${SELECTED_NAME}" ]; then
+              SELECTED_NAME="${DEFAULT_WEBAPP_NAME_TST}"
+            fi
           else
             SELECTED_NAME="${AZURE_WEBAPP_NAME_PRD}"
+            if [ -z "${SELECTED_NAME}" ]; then
+              SELECTED_NAME="${DEFAULT_WEBAPP_NAME_PRD}"
+            fi
           fi
 
           # Backward compatibility with single-name setup.
