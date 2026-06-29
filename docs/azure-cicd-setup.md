@@ -153,7 +153,7 @@ Run workflow `.github/workflows/azure-infra-provision.yml` with inputs:
 This provisions from `infra/azure/main.bicep`:
 
 - Linux App Service plan
-- Linux Web App (Node 20)
+- Linux Web App (Node 22)
 - baseline app settings
 
 ### Method 2: Local Azure CLI
@@ -190,7 +190,7 @@ You can also store them as secrets with the same names.
 In Azure Web App configuration, set:
 
 - Startup command: `npm start`
-- Node version: 20 LTS
+- Node version: 22 LTS
 - App settings (example):
   - `DATABASE_URL`
   - `GOOGLE_CLIENT_ID`
@@ -208,3 +208,17 @@ In Azure Web App configuration, set:
 - If login fails with OIDC-related errors, switch to `AZURE_CREDENTIALS` fallback.
 - If deployment succeeds but app does not start, verify startup command and required app settings.
 - If Prisma/database access fails, ensure firewall/network allows Azure App Service outbound access.
+
+## 8) Verify deployment quickly
+
+After deploy, test these endpoints:
+
+- Swagger UI: `https://<your-webapp-name>.azurewebsites.net/docs`
+- Health endpoint: `https://<your-webapp-name>.azurewebsites.net/health`
+
+Example checks:
+
+```bash
+curl -i "https://cookboek-tst-api.azurewebsites.net/health"
+curl -I "https://cookboek-tst-api.azurewebsites.net/docs"
+```

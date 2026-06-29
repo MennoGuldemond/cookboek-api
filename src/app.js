@@ -59,6 +59,21 @@ app.get('/', (req, res) => {
   res.sendFile('./public/dist/index.html', { root: __dirname })
 })
 
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     summary: Health check endpoint
+ *     tags:
+ *       - System
+ *     responses:
+ *       200:
+ *         description: Service is healthy
+ */
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' })
+})
+
 // ROUTES
 app.use('/users', userRouter)
 app.use('/recipes', recipeRouter)

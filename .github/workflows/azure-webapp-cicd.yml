@@ -23,7 +23,7 @@ permissions:
   id-token: write
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
   TARGET_ENV: ${{ github.event_name == 'pull_request' && 'tst' || github.event_name == 'workflow_dispatch' && inputs.targetEnvironment || 'prd' }}
   DEFAULT_WEBAPP_NAME_TST: cookboek-tst-api
   DEFAULT_WEBAPP_NAME_PRD: cookboek-prd-api

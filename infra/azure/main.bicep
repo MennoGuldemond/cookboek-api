@@ -71,7 +71,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
     serverFarmId: appServicePlan.id
     httpsOnly: true
     siteConfig: {
-      linuxFxVersion: 'NODE|20-lts'
+      linuxFxVersion: 'NODE|22-lts'
       minTlsVersion: '1.2'
       appSettings: concat(baseAppSettings, customAppSettings)
     }
