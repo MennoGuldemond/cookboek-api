@@ -19,6 +19,16 @@ const storage = multer.diskStorage({
 })
 const upload = multer({ storage: storage })
 
+/**
+ * @openapi
+ * /images/upload:
+ *   post:
+ *     summary: Upload an image
+ *     tags: [Images]
+ *     responses:
+ *       200:
+ *         description: Uploaded image URL
+ */
 imageRouter.post('/upload', isAuthorized, upload.single('file'), function (req, res) {
   // req.file is the `profile-file` file
   //   console.log(req.file)

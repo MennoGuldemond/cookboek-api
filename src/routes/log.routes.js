@@ -6,6 +6,16 @@ import { isAdmin, isAuthorized } from '../auth.js'
 export const logRouter = express.Router()
 logRouter.use(bodyParser.json())
 
+/**
+ * @openapi
+ * /logs:
+ *   get:
+ *     summary: List audit logs (admin)
+ *     tags: [Logs]
+ *     responses:
+ *       200:
+ *         description: Logs list
+ */
 logRouter.get('/', isAuthorized, isAdmin, async (req, res) => {
   try {
     let logs = await logRepository.get()

@@ -6,6 +6,22 @@ import { isAuthorized } from '../auth.js'
 export const userRouter = express.Router()
 userRouter.use(bodyParser.json())
 
+/**
+ * @openapi
+ * /users/{email}:
+ *   get:
+ *     summary: Get user by email
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: email
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User found
+ */
 userRouter.get('/:email', isAuthorized, async (req, res) => {
   try {
     const user = await userService.getByEmail(req.params.email)
@@ -19,6 +35,16 @@ userRouter.get('/:email', isAuthorized, async (req, res) => {
   }
 })
 
+/**
+ * @openapi
+ * /users:
+ *   get:
+ *     summary: Get current user information
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Current user data
+ */
 userRouter.get('/', isAuthorized, async (req, res) => {
   try {
     const userProfile = res.locals.auth
@@ -34,6 +60,22 @@ userRouter.get('/', isAuthorized, async (req, res) => {
   }
 })
 
+/**
+ * @openapi
+ * /users/{id}:
+ *   get:
+ *     summary: Get user by id
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User found
+ */
 userRouter.get('/:id', isAuthorized, async (req, res) => {
   try {
     const userInfo = await userService.getById(req.params.id)

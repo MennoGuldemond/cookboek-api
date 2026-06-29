@@ -6,6 +6,16 @@ import { isAuthorized, isAdmin } from '../auth.js'
 export const categoryRouter = express.Router()
 categoryRouter.use(bodyParser.json())
 
+/**
+ * @openapi
+ * /categories:
+ *   get:
+ *     summary: List categories
+ *     tags: [Categories]
+ *     responses:
+ *       200:
+ *         description: Category list
+ */
 categoryRouter.get('/', async (req, res) => {
   try {
     let categories = await categoryRepository.get()
@@ -15,6 +25,22 @@ categoryRouter.get('/', async (req, res) => {
   }
 })
 
+/**
+ * @openapi
+ * /categories/{id}:
+ *   get:
+ *     summary: Get category by id
+ *     tags: [Categories]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Category found
+ */
 categoryRouter.get('/:id', async (req, res) => {
   try {
     let category = await categoryRepository.getById(req.params.id)
@@ -28,6 +54,16 @@ categoryRouter.get('/:id', async (req, res) => {
   }
 })
 
+/**
+ * @openapi
+ * /categories:
+ *   post:
+ *     summary: Create or update category
+ *     tags: [Categories]
+ *     responses:
+ *       200:
+ *         description: Saved category
+ */
 categoryRouter.post('/', isAuthorized, isAdmin, async (req, res) => {
   try {
     let category = await categoryRepository.upsert(req.body)
@@ -41,6 +77,22 @@ categoryRouter.post('/', isAuthorized, isAdmin, async (req, res) => {
   }
 })
 
+/**
+ * @openapi
+ * /categories/{id}:
+ *   delete:
+ *     summary: Delete category by id
+ *     tags: [Categories]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Delete result
+ */
 categoryRouter.delete('/:id', isAuthorized, isAdmin, async (req, res) => {
   try {
     let success = await categoryRepository.remove(req.params.id)
