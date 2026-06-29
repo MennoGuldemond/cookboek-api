@@ -1,24 +1,56 @@
-# Azure CI/CD setup (GitHub Actions)
+# Azure infrastructure + CI/CD setup (GitHub Actions)
 
-This project includes a GitHub Actions workflow at:
+This project includes two workflows:
 
-- `.github/workflows/azure-webapp-cicd.yml`
+- `.github/workflows/azure-infra-provision.yml` (manual infrastructure provisioning)
+- `.github/workflows/azure-webapp-cicd.yml` (app deployment on `main`)
 
-It deploys to Azure App Service (Web App) on pushes to `main`.
+With these files, you can start from only an existing resource group and provision the rest as code.
+
+## Quick start for your project
+
+You can use these two environments:
+
+- `prd` in resource group `cookboek-prd`
+- `tst` in resource group `cookboek-tst`
+
+Preferred Azure region "Western Europe" maps to Azure region code `westeurope`.
+
+Create the test resource group once:
+
+```bash
+az group create --name "cookboek-tst" --location "westeurope"
+```
+
+Provision both environments with parameter files:
+
+```bash
+az deployment group create \
+  --resource-group "cookboek-prd" \
+  --template-file infra/azure/main.bicep \
+  --parameters @infra/azure/parameters/cookboek-prd.parameters.json
+
+az deployment group create \
+  --resource-group "cookboek-tst" \
+  --template-file infra/azure/main.bicep \
+  --parameters @infra/azure/parameters/cookboek-tst.parameters.json
+```
+
+Set repository variables (or secrets) for deployment targets:
+
+- `AZURE_WEBAPP_NAME_PRD` = app name used in `cookboek-prd.parameters.json`
+- `AZURE_WEBAPP_NAME_TST` = app name used in `cookboek-tst.parameters.json`
 
 ## 1) Prerequisites
 
 - You have an Azure resource group in your Visual Studio subscription.
-- You created an Azure Web App for Node.js in that resource group.
 - You can run Azure CLI locally (`az login`).
 
-## 2) Required GitHub secret
+## 2) Azure authentication for GitHub Actions
 
-Add this repository secret:
+Both workflows support two auth options.
 
-- `AZURE_WEBAPP_NAME`: the exact Azure Web App name.
-
-## 3) Authentication option A (recommended): OIDC federation
+### Option A (recommended): OIDC federation
 
 Use this if your tenant allows workload identity federation.
 
@@ -57,13 +89,13 @@ EOF
 az ad app federated-credential create --id "$SP_APP_ID" --parameters @federated-credential.json
 ```
 
-### Add GitHub secrets
+### Add GitHub secrets for OIDC
 
 - `AZURE_CLIENT_ID`: service principal app id (`$SP_APP_ID`)
 - `AZURE_TENANT_ID`: your tenant id (`az account show --query tenantId -o tsv`)
 - `AZURE_SUBSCRIPTION_ID`: your subscription id
 
-## 4) Authentication option B (fallback): service principal secret
+### Option B (fallback): service principal secret
 
 Use this when OIDC is blocked by tenant policy.
 
@@ -84,20 +116,68 @@ Copy the full JSON output into GitHub secret:
 
 - `AZURE_CREDENTIALS`
 
-## 5) Trigger deployment
+## 3) Provision infrastructure as code
 
-- Push to `main`, or run the workflow manually from the Actions tab.
+### Method 1: GitHub Actions (recommended)
 
-## 6) Configure runtime in Azure Web App
+Run workflow `.github/workflows/azure-infra-provision.yml` with inputs:
 
-In Azure Web App configuration:
+- `resourceGroup`: your existing resource group
+- `location`: e.g. `westeurope`
+- `appName`: globally unique web app name (example: `cookboek-api-menno-001`)
+- `skuName`: `B1`, `S1`, or `P1v3`
+
+This provisions from `infra/azure/main.bicep`:
+
+- Linux App Service plan
+- Linux Web App (Node 20)
+- baseline app settings
+
+### Method 2: Local Azure CLI
+
+```bash
+RESOURCE_GROUP="<your-resource-group>"
+LOCATION="westeurope"
+APP_NAME="cookboek-api-menno-001"
+
+az deployment group create \
+  --resource-group "$RESOURCE_GROUP" \
+  --template-file infra/azure/main.bicep \
+  --parameters appName="$APP_NAME" location="$LOCATION" skuName="B1"
+```
+
+Optional parameter example file:
+
+- `infra/azure/main.parameters.example.json`
+- `infra/azure/parameters/cookboek-prd.parameters.json`
+- `infra/azure/parameters/cookboek-tst.parameters.json`
+
+## 4) Configure app name for deploy workflow
+
+Set one of these in GitHub repository settings:
+
+- Variable `AZURE_WEBAPP_NAME_PRD` (recommended for production)
+- Variable `AZURE_WEBAPP_NAME_TST` (recommended for test)
+- or fallback single-name Variable `AZURE_WEBAPP_NAME`
+
+You can also store them as secrets with the same names.
+
+## 5) Configure runtime settings in Azure Web App
+
+In Azure Web App configuration, set:
 
 - Startup command: `npm start`
 - Node version: 20 LTS
 - App settings (example):
   - `DATABASE_URL`
-  - `PORT` (optional, App Service usually injects this)
   - `GOOGLE_CLIENT_ID`
+  - `PORT` (optional, App Service usually injects this)
+
+## 6) Trigger application deployment
+
+- Pull request to `main` deploys to `tst` only.
+- Push to `main` deploys to `prd`.
+- Manual run can target `tst` or `prd`, but `prd` is blocked unless the run is on `main`.
 
 ## 7) Troubleshooting
 

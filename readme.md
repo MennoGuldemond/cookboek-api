@@ -1,6 +1,6 @@
-## Cookbook API
+## Cookboek API
 
-The repository contains the rest api project for the cookbook webapp.
+The repository contains the rest api project for the cookboek webapp.
 This project makes use of:
 
 - Express
@@ -27,9 +27,16 @@ This project makes use of:
 
 ## CI/CD (Azure)
 
-This repository contains a GitHub Actions workflow for deploying to Azure App Service:
+This repository contains GitHub Actions workflows for provisioning and deployment on Azure App Service:
 
+- `.github/workflows/azure-infra-provision.yml`
 - `.github/workflows/azure-webapp-cicd.yml`
+
+Infrastructure-as-code templates are located in:
+
+- `infra/azure/main.bicep`
+- `infra/azure/parameters/cookboek-prd.parameters.json`
+- `infra/azure/parameters/cookboek-tst.parameters.json`
 
 Setup instructions are documented here:
 

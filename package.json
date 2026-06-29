@@ -1,7 +1,7 @@
 {
   "name": "cookboek-api",
   "version": "0.0.3",
-  "description": "REST api for cookbook",
+  "description": "REST api for cookboek",
   "main": "app.js",
   "type": "module",
   "scripts": {

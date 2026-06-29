@@ -4,7 +4,19 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
+    inputs:
+      targetEnvironment:
+        description: Deployment target environment
+        required: true
+        default: prd
+        type: choice
+        options:
+          - tst
+          - prd
 
 permissions:
   contents: read
@@ -12,11 +24,15 @@ permissions:
 
 env:
   NODE_VERSION: '20'
+  TARGET_ENV: ${{ github.event_name == 'pull_request' && 'tst' || github.event_name == 'workflow_dispatch' && inputs.targetEnvironment || 'prd' }}
+  AZURE_WEBAPP_NAME_PRD: ${{ vars.AZURE_WEBAPP_NAME_PRD != '' && vars.AZURE_WEBAPP_NAME_PRD || secrets.AZURE_WEBAPP_NAME_PRD }}
+  AZURE_WEBAPP_NAME_TST: ${{ vars.AZURE_WEBAPP_NAME_TST != '' && vars.AZURE_WEBAPP_NAME_TST || secrets.AZURE_WEBAPP_NAME_TST }}
+  AZURE_WEBAPP_NAME_DEFAULT: ${{ vars.AZURE_WEBAPP_NAME != '' && vars.AZURE_WEBAPP_NAME || secrets.AZURE_WEBAPP_NAME }}
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ github.event_name == 'pull_request' && 'tst' || github.event_name == 'workflow_dispatch' && inputs.targetEnvironment || 'prd' }}
 
     steps:
       - name: Checkout
@@ -31,11 +47,36 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Ensure Azure Web App name is configured
-        if: ${{ secrets.AZURE_WEBAPP_NAME == '' }}
+      - name: Guardrail - block prd outside main
         run: |
-          echo "Missing required secret: AZURE_WEBAPP_NAME"
-          exit 1
+          if [ "${TARGET_ENV}" = "prd" ] && [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "Production deployment is only allowed from main."
+            echo "Current ref: ${GITHUB_REF}"
+            exit 1
+          fi
+
+      - name: Resolve target app name
+        run: |
+          if [ "${TARGET_ENV}" = "tst" ]; then
+            SELECTED_NAME="${AZURE_WEBAPP_NAME_TST}"
+          else
+            SELECTED_NAME="${AZURE_WEBAPP_NAME_PRD}"
+          fi
+
+          # Backward compatibility with single-name setup.
+          if [ -z "${SELECTED_NAME}" ]; then
+            SELECTED_NAME="${AZURE_WEBAPP_NAME_DEFAULT}"
+          fi
+
+          echo "AZURE_WEBAPP_NAME=${SELECTED_NAME}" >> "$GITHUB_ENV"
+
+      - name: Ensure Azure Web App name is configured
+        run: |
+          if [ -z "${AZURE_WEBAPP_NAME}" ]; then
+            echo "Missing web app name for target environment '${TARGET_ENV}'."
+            echo "Set AZURE_WEBAPP_NAME_${TARGET_ENV^^}, or fallback AZURE_WEBAPP_NAME."
+            exit 1
+          fi
 
       - name: Azure login with OIDC (preferred)
         if: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
@@ -61,5 +102,5 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           package: .
