@@ -24,3 +24,13 @@ This project makes use of:
 1. For now, create te views by sql script yourself.
 1. Create a 'public' folder in the root of the project.
 1. Create a 'images' folder inside that public folder.
+
+## CI/CD (Azure)
+
+This repository contains a GitHub Actions workflow for deploying to Azure App Service:
+
+- `.github/workflows/azure-webapp-cicd.yml`
+
+Setup instructions are documented here:
+
+- `docs/azure-cicd-setup.md`
