@@ -34,6 +34,8 @@ permissions:
 
 env:
   TEMPLATE_FILE: infra/azure/main.bicep
+  HAS_OIDC: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
+  HAS_SP_SECRET: ${{ secrets.AZURE_CREDENTIALS != '' }}
 
 jobs:
   provision:
@@ -44,7 +46,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Azure login with OIDC (preferred)
-        if: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
+        if: ${{ env.HAS_OIDC == 'true' }}
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -52,13 +54,13 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Azure login with service principal secret (fallback)
-        if: ${{ !(secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '') && secrets.AZURE_CREDENTIALS != '' }}
+        if: ${{ env.HAS_OIDC != 'true' && env.HAS_SP_SECRET == 'true' }}
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Fail when no Azure auth method is configured
-        if: ${{ !(secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '') && secrets.AZURE_CREDENTIALS == '' }}
+        if: ${{ env.HAS_OIDC != 'true' && env.HAS_SP_SECRET != 'true' }}
         run: |
           echo "No Azure auth configured. Set OIDC secrets (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID)"
           echo "or set AZURE_CREDENTIALS as a JSON service principal secret."

@@ -50,6 +50,29 @@ Set repository variables (or secrets) for deployment targets:
 
 Both workflows support two auth options.
 
+If you do not have Entra ID access, use publish profiles for app deployment (section 2A) and skip to section 3 for infra via local CLI.
+
+### 2A) No Entra access: use App Service publish profiles (deploy workflow)
+
+From Azure Portal:
+
+- Open Web App `cookboek-tst-api` -> Get publish profile -> download the file.
+- Open Web App `cookboek-prd-api` -> Get publish profile -> download the file.
+
+In GitHub repository settings -> Secrets and variables -> Actions, add:
+
+- `AZURE_WEBAPP_PUBLISH_PROFILE_TST`: full XML content from tst publish profile file
+- `AZURE_WEBAPP_PUBLISH_PROFILE_PRD`: full XML content from prd publish profile file
+
+Optional single fallback secret:
+
+- `AZURE_WEBAPP_PUBLISH_PROFILE`
+
+Keep app name values configured as variables or secrets:
+
+- `AZURE_WEBAPP_NAME_TST`
+- `AZURE_WEBAPP_NAME_PRD`
+
 ### Option A (recommended): OIDC federation
 
 Use this if your tenant allows workload identity federation.
@@ -178,6 +201,7 @@ In Azure Web App configuration, set:
 - Pull request to `main` deploys to `tst` only.
 - Push to `main` deploys to `prd`.
 - Manual run can target `tst` or `prd`, but `prd` is blocked unless the run is on `main`.
+- Deploy workflow auth preference is: publish profile first, then OIDC, then `AZURE_CREDENTIALS` fallback.
 
 ## 7) Troubleshooting
 
