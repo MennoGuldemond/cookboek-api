@@ -62,7 +62,10 @@ var baseAppSettings = [
 ]
 
 var customAppSettings = [
-  for item in items(appSettings): {
+  for item in filter(
+    items(appSettings),
+    item => !empty(string(item.value)) && toLower(string(item.value)) != 'replace-me'
+  ): {
     name: item.key
     value: string(item.value)
   }
