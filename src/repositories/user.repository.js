@@ -4,11 +4,10 @@ import * as logService from '../services/log.service.js'
 export async function getAll() {
   try {
     const users = await prisma.user.findMany()
-    await prisma.$disconnect()
     return users
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -17,38 +16,56 @@ export async function getById(id) {
     const userInfo = await prisma.userInfo.findUnique({
       where: { id: id },
     })
-    await prisma.$disconnect()
     return userInfo
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
 export async function getByEmail(email) {
-  return prisma.user
-    .findUnique({ where: { email: email } })
-    .then(async (user) => {
-      await prisma.$disconnect()
-      return user
-    })
-    .catch(async (err) => {
-      logService.error(JSON.stringify(err))
-      return await prisma.$disconnect()
-    })
+  try {
+    const user = await prisma.user.findUnique({ where: { email: email } })
+    return user
+  } catch (err) {
+    await logService.error(JSON.stringify(err))
+    return null
+  }
 }
 
 export async function findOrCreate(userProfile) {
-  const found = await getByEmail(userProfile.email)
-  if (found) {
-    return found
+  try {
+    if (!userProfile?.sub || !userProfile?.email) {
+      throw new Error('Missing required Google profile fields: sub/email')
+    }
+
+    const user = await prisma.user.upsert({
+      where: { id: userProfile.sub },
+      update: {
+        email: userProfile.email,
+        name: userProfile.name,
+        photoUrl: userProfile.picture,
+        provider: 'Google',
+      },
+      create: {
+        id: userProfile.sub,
+        email: userProfile.email,
+        name: userProfile.name,
+        photoUrl: userProfile.picture,
+        provider: 'Google',
+      },
+    })
+
+    return user
+  } catch (err) {
+    await logService.error(`findOrCreate user failed: ${JSON.stringify(err)}`)
+    return null
   }
-  return await create(userProfile)
 }
 
 export async function create(userProfile) {
   try {
-    const newUser = prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         id: userProfile.sub,
         email: userProfile.email,
@@ -57,10 +74,9 @@ export async function create(userProfile) {
         provider: 'Google',
       },
     })
-    await prisma.$disconnect()
     return newUser
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }

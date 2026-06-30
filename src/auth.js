@@ -11,14 +11,20 @@ export async function isAuthorized(req, res, next) {
       idToken: req.headers.authorization,
       audience: process.env.GOOGLE_CLIENT_ID,
     })
-    if (!ticket.getPayload) {
+    const payload = ticket.getPayload()
+    if (!payload) {
       return res.status(401).send('Unauthorized')
     }
-    const payload = ticket.getPayload()
     res.locals.auth = payload
-    next()
+    return next()
   }
-  verify().catch(console.error)
+  verify().catch((error) => {
+    console.error('Authorization verification failed:', error)
+    if (!res.headersSent) {
+      return res.status(401).send('Unauthorized')
+    }
+    return null
+  })
 }
 
 export async function isAdmin(req, res, next) {
@@ -30,13 +36,24 @@ export async function isAdmin(req, res, next) {
       idToken: req.headers.authorization,
       audience: process.env.GOOGLE_CLIENT_ID,
     })
-    const userId = ticket.getPayload().sub
+    const payload = ticket.getPayload()
+    if (!payload) {
+      return res.status(401).send('Unauthorized')
+    }
+
+    const userId = payload.sub
     const user = await userService.getById(userId)
     if (user?.role === 'ADMIN') {
-      next()
+      return next()
     } else {
-      res.status(403).send('Forbidden')
+      return res.status(403).send('Forbidden')
     }
   }
-  verify().catch(console.error)
+  verify().catch((error) => {
+    console.error('Admin verification failed:', error)
+    if (!res.headersSent) {
+      return res.status(401).send('Unauthorized')
+    }
+    return null
+  })
 }

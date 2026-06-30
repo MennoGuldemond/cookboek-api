@@ -28,7 +28,7 @@ userRouter.get('/:email', isAuthorized, async (req, res) => {
     if (user) {
       return res.status(200).json(user)
     } else {
-      return res.status(404)
+      return res.status(404).json({ message: 'User not found' })
     }
   } catch (error) {
     return res.status(500).json(error)
@@ -49,11 +49,16 @@ userRouter.get('/', isAuthorized, async (req, res) => {
   try {
     const userProfile = res.locals.auth
     const user = await userService.findOrCreate(userProfile)
+    if (!user?.id) {
+      return res.status(500).json({ message: 'Failed to create or load user' })
+    }
+
     const userInfo = await userService.getById(user.id)
     if (userInfo) {
       return res.status(200).json(userInfo)
     } else {
-      return res.status(404)
+      // Fallback when UserInfo view is unavailable/outdated in an environment.
+      return res.status(200).json(user)
     }
   } catch (error) {
     return res.status(500).json(error)
@@ -82,7 +87,7 @@ userRouter.get('/:id', isAuthorized, async (req, res) => {
     if (userInfo) {
       return res.status(200).json(userInfo)
     } else {
-      return res.status(404)
+      return res.status(404).json({ message: 'User not found' })
     }
   } catch (error) {
     return res.status(500).json(error)

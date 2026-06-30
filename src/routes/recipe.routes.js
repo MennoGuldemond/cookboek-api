@@ -61,7 +61,7 @@ recipeRouter.get('/liked', isAuthorized, async (req, res) => {
     if (recipe) {
       return res.status(200).json(recipe)
     } else {
-      return res.status(404)
+      return res.status(404).json({ message: 'No liked recipes found' })
     }
   } catch (error) {
     return res.status(500).json(error)
@@ -90,7 +90,7 @@ recipeRouter.get('/:id', async (req, res) => {
     if (recipe) {
       return res.status(200).json(recipe)
     } else {
-      return res.status(404)
+      return res.status(404).json({ message: 'Recipe not found' })
     }
   } catch (error) {
     return res.status(500).json(error)
@@ -116,7 +116,7 @@ recipeRouter.post('/', isAuthorized, async (req, res) => {
     if (recipe) {
       return res.status(200).json(recipe)
     } else {
-      return res.status(404)
+      return res.status(404).json({ message: 'Recipe could not be saved' })
     }
   } catch (error) {
     return res.status(500).json(error)

@@ -78,7 +78,7 @@ likeRouter.get('/:id', isAuthorized, async (req, res) => {
     if (like) {
       return res.status(200).json(like)
     } else {
-      return res.status(404)
+      return res.status(404).json({ message: 'Like not found' })
     }
   } catch (error) {
     return res.status(500).json(error)
@@ -101,7 +101,7 @@ likeRouter.post('/', isAuthorized, async (req, res) => {
     if (like) {
       return res.status(200).json(like)
     } else {
-      return res.status(404)
+      return res.status(404).json({ message: 'Like could not be created' })
     }
   } catch (error) {
     return res.status(500).json(error)

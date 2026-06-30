@@ -31,11 +31,10 @@ export async function get(params) {
       take: take,
       skip: skip,
     })
-    await prisma.$disconnect()
     return recipes
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -46,11 +45,10 @@ export async function get(params) {
 export async function getNewest() {
   try {
     const recipe = await prisma.recipeInfo.findFirst({ orderBy: { createdAt: 'desc' } })
-    await prisma.$disconnect()
     return recipe
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -65,11 +63,10 @@ export async function getById(id) {
       where: { id: id },
       include: { author: true, categories: true, likes: true },
     })
-    await prisma.$disconnect()
     return recipe
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -86,7 +83,6 @@ export async function getLikedRecipesByUser(userId) {
     })
     const recipeIds = likedRecipeIds.map((like) => like.recipeId)
     if (recipeIds.length === 0) {
-      await prisma.$disconnect()
       return []
     }
     const recipes = await prisma.recipeInfo.findMany({
@@ -94,11 +90,10 @@ export async function getLikedRecipesByUser(userId) {
         id: { in: recipeIds },
       },
     })
-    await prisma.$disconnect()
     return recipes
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -182,11 +177,10 @@ export async function upsert(recipe, userId) {
         },
       })
     }
-    await prisma.$disconnect()
     return savedRecipe
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -209,11 +203,9 @@ export async function remove(recipeId, userId) {
     })
     const filePath = path.join('./public/images', path.parse(recipe.photoURL).name + path.parse(recipe.photoURL).ext)
     await unlink(filePath)
-    await prisma.$disconnect()
     return true
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
     return false
   }
 }

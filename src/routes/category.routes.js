@@ -47,7 +47,7 @@ categoryRouter.get('/:id', async (req, res) => {
     if (category) {
       return res.status(200).json(category)
     } else {
-      return res.status(404)
+      return res.status(404).json({ message: 'Category not found' })
     }
   } catch (error) {
     return res.status(500).json(error)
@@ -70,7 +70,7 @@ categoryRouter.post('/', isAuthorized, isAdmin, async (req, res) => {
     if (category) {
       return res.status(200).json(category)
     } else {
-      return res.status(404)
+      return res.status(404).json({ message: 'Category could not be saved' })
     }
   } catch (error) {
     return res.status(500).json(error)
