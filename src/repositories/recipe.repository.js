@@ -1,7 +1,6 @@
-import path from 'path'
-import { unlink } from 'node:fs/promises'
 import { prisma } from '../db/client.js'
 import * as logService from '../services/log.service.js'
+import * as imageService from '../services/image.service.js'
 
 /**
  * Get recipes from the RecipeInfo view with optional filters and pagination
@@ -201,8 +200,16 @@ export async function remove(recipeId, userId) {
         id: recipe.id,
       },
     })
-    const filePath = path.join('./public/images', path.parse(recipe.photoURL).name + path.parse(recipe.photoURL).ext)
-    await unlink(filePath)
+
+    // Deleting the recipe should not fail if image cleanup has issues.
+    try {
+      await imageService.deleteByUrl(recipe.photoURL)
+    } catch (imageDeleteError) {
+      await logService.warning(
+        `Image cleanup failed for recipe ${recipe.id}: ${imageDeleteError?.message || imageDeleteError}`
+      )
+    }
+
     return true
   } catch (err) {
     await logService.error(JSON.stringify(err))
