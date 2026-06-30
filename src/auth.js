@@ -7,12 +7,15 @@ function readIdToken(authorizationHeader) {
     return null
   }
 
-  // Accept both raw token and "Bearer <token>" formats.
-  if (authorizationHeader.startsWith('Bearer ')) {
-    return authorizationHeader.slice(7).trim()
+  const normalizedHeader = authorizationHeader.trim()
+
+  // Accept both raw token and "Bearer <token>" formats (case-insensitive).
+  const bearerPrefix = /^bearer\s+/i
+  if (bearerPrefix.test(normalizedHeader)) {
+    return normalizedHeader.replace(bearerPrefix, '').trim()
   }
 
-  return authorizationHeader.trim()
+  return normalizedHeader
 }
 
 export async function isAuthorized(req, res, next) {

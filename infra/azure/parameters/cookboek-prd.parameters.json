@@ -12,7 +12,7 @@
       "value": "cookboek-prd-plan"
     },
     "storageAccountName": {
-      "value": "cookboek-prd-sa"
+      "value": "cookboekprdsa"
     },
     "imageContainerName": {
       "value": "images"
