@@ -13,6 +13,7 @@ import { imageRouter } from './routes/image.routes.js'
 import { categoryRouter } from './routes/category.routes.js'
 import { likeRouter } from './routes/like.routes.js'
 import { logRouter } from './routes/log.routes.js'
+import { prisma } from './db/client.js'
 
 const __dirname = url.fileURLToPath(new URL('../', import.meta.url))
 
@@ -59,6 +60,21 @@ app.get('/', (req, res) => {
   res.sendFile('./public/dist/index.html', { root: __dirname })
 })
 
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     summary: Health check endpoint
+ *     tags:
+ *       - System
+ *     responses:
+ *       200:
+ *         description: Service is healthy
+ */
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' })
+})
+
 // ROUTES
 app.use('/users', userRouter)
 app.use('/recipes', recipeRouter)
@@ -66,3 +82,16 @@ app.use('/categories', categoryRouter)
 app.use('/likes', likeRouter)
 app.use('/images', imageRouter)
 app.use('/logs', logRouter)
+
+async function shutdown(signal) {
+  try {
+    await prisma.$disconnect()
+  } catch (error) {
+    console.error('Failed to disconnect Prisma during shutdown:', error)
+  } finally {
+    process.exit(0)
+  }
+}
+
+process.on('SIGINT', () => shutdown('SIGINT'))
+process.on('SIGTERM', () => shutdown('SIGTERM'))

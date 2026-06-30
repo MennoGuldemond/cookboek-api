@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "westeurope"
+    },
+    "appName": {
+      "value": "cookboek-prd-api"
+    },
+    "appServicePlanName": {
+      "value": "cookboek-prd-plan"
+    },
+    "storageAccountName": {
+      "value": "cookboekprdsa"
+    },
+    "imageContainerName": {
+      "value": "images"
+    },
+    "skuName": {
+      "value": "D1"
+    },
+    "appSettings": {
+      "value": {
+        "GOOGLE_CLIENT_ID": "replace-me",
+        "DATABASE_URL": "replace-me"
+      }
+    }
+  }
+}

@@ -1,22 +1,47 @@
 name: CI/CD - Azure Web App
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      target:
+        description: Deployment target environment
+        required: true
+        type: choice
+        options:
+          - tst
+          - prd
 
 permissions:
   contents: read
   id-token: write
 
+concurrency:
+  group: backend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
+  DEFAULT_WEBAPP_NAME_TST: cookboek-tst-api
+  DEFAULT_WEBAPP_NAME_PRD: cookboek-prd-api
+  AZURE_WEBAPP_NAME_PRD: ${{ vars.AZURE_WEBAPP_NAME_PRD != '' && vars.AZURE_WEBAPP_NAME_PRD || secrets.AZURE_WEBAPP_NAME_PRD }}
+  AZURE_WEBAPP_NAME_TST: ${{ vars.AZURE_WEBAPP_NAME_TST != '' && vars.AZURE_WEBAPP_NAME_TST || secrets.AZURE_WEBAPP_NAME_TST }}
+  AZURE_WEBAPP_NAME_DEFAULT: ${{ vars.AZURE_WEBAPP_NAME != '' && vars.AZURE_WEBAPP_NAME || secrets.AZURE_WEBAPP_NAME }}
+  HAS_PUBLISH_PROFILE_TST: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_TST != '' || secrets.AZURE_WEBAPP_PUBLISH_PROFILE != '' }}
+  HAS_PUBLISH_PROFILE_PRD: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PRD != '' || secrets.AZURE_WEBAPP_PUBLISH_PROFILE != '' }}
+  HAS_OIDC: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
+  HAS_SP_SECRET: ${{ secrets.AZURE_CREDENTIALS != '' }}
 
 jobs:
-  build-and-deploy:
+  deploy-tst:
+    if: ${{ (github.event_name == 'pull_request' && github.base_ref == 'main') || (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && (inputs.target == 'tst' || inputs.target == 'prd')) }}
     runs-on: ubuntu-latest
-    environment: production
+    environment: tst
 
     steps:
       - name: Checkout
@@ -31,14 +56,38 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Ensure Azure Web App name is configured
-        if: ${{ secrets.AZURE_WEBAPP_NAME == '' }}
+      - name: Resolve tst app name
         run: |
-          echo "Missing required secret: AZURE_WEBAPP_NAME"
-          exit 1
+          SELECTED_NAME="${AZURE_WEBAPP_NAME_TST}"
+          if [ -z "${SELECTED_NAME}" ]; then
+            SELECTED_NAME="${DEFAULT_WEBAPP_NAME_TST}"
+          fi
+
+          # Backward compatibility with single-name setup.
+          if [ -z "${SELECTED_NAME}" ]; then
+            SELECTED_NAME="${AZURE_WEBAPP_NAME_DEFAULT}"
+          fi
+
+          echo "AZURE_WEBAPP_NAME=${SELECTED_NAME}" >> "$GITHUB_ENV"
+
+      - name: Ensure tst web app name is configured
+        run: |
+          if [ -z "${AZURE_WEBAPP_NAME}" ]; then
+            echo "Missing web app name for environment 'tst'."
+            echo "Set AZURE_WEBAPP_NAME_TST, or fallback AZURE_WEBAPP_NAME."
+            exit 1
+          fi
+
+      - name: Deploy tst with publish profile
+        if: ${{ env.HAS_PUBLISH_PROFILE_TST == 'true' }}
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_TST != '' && secrets.AZURE_WEBAPP_PUBLISH_PROFILE_TST || secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .
 
       - name: Azure login with OIDC (preferred)
-        if: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
+        if: ${{ env.HAS_PUBLISH_PROFILE_TST != 'true' && env.HAS_OIDC == 'true' }}
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -46,20 +95,102 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Azure login with service principal secret (fallback)
-        if: ${{ !(secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '') && secrets.AZURE_CREDENTIALS != '' }}
+        if: ${{ env.HAS_PUBLISH_PROFILE_TST != 'true' && env.HAS_OIDC != 'true' && env.HAS_SP_SECRET == 'true' }}
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Fail when no Azure auth method is configured
-        if: ${{ !(secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '') && secrets.AZURE_CREDENTIALS == '' }}
+      - name: Fail when no deployment auth method is configured
+        if: ${{ env.HAS_PUBLISH_PROFILE_TST != 'true' && env.HAS_OIDC != 'true' && env.HAS_SP_SECRET != 'true' }}
         run: |
-          echo "No Azure auth configured. Set OIDC secrets (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID)"
+          echo "No deployment auth configured for target 'tst'."
+          echo "Set AZURE_WEBAPP_PUBLISH_PROFILE_TST (or AZURE_WEBAPP_PUBLISH_PROFILE),"
+          echo "or configure OIDC secrets (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID),"
           echo "or set AZURE_CREDENTIALS as a JSON service principal secret."
           exit 1
 
-      - name: Deploy to Azure Web App
+      - name: Deploy tst to Azure Web App
+        if: ${{ env.HAS_PUBLISH_PROFILE_TST != 'true' }}
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: .
+
+  deploy-prd:
+    needs: [deploy-tst]
+    if: ${{ ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.target == 'prd')) && needs.deploy-tst.result == 'success' }}
+    runs-on: ubuntu-latest
+    environment: prd
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve prd app name
+        run: |
+          SELECTED_NAME="${AZURE_WEBAPP_NAME_PRD}"
+          if [ -z "${SELECTED_NAME}" ]; then
+            SELECTED_NAME="${DEFAULT_WEBAPP_NAME_PRD}"
+          fi
+
+          # Backward compatibility with single-name setup.
+          if [ -z "${SELECTED_NAME}" ]; then
+            SELECTED_NAME="${AZURE_WEBAPP_NAME_DEFAULT}"
+          fi
+
+          echo "AZURE_WEBAPP_NAME=${SELECTED_NAME}" >> "$GITHUB_ENV"
+
+      - name: Ensure prd web app name is configured
+        run: |
+          if [ -z "${AZURE_WEBAPP_NAME}" ]; then
+            echo "Missing web app name for environment 'prd'."
+            echo "Set AZURE_WEBAPP_NAME_PRD, or fallback AZURE_WEBAPP_NAME."
+            exit 1
+          fi
+
+      - name: Deploy prd with publish profile
+        if: ${{ env.HAS_PUBLISH_PROFILE_PRD == 'true' }}
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PRD != '' && secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PRD || secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .
+
+      - name: Azure login with OIDC (preferred)
+        if: ${{ env.HAS_PUBLISH_PROFILE_PRD != 'true' && env.HAS_OIDC == 'true' }}
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Azure login with service principal secret (fallback)
+        if: ${{ env.HAS_PUBLISH_PROFILE_PRD != 'true' && env.HAS_OIDC != 'true' && env.HAS_SP_SECRET == 'true' }}
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Fail when no deployment auth method is configured
+        if: ${{ env.HAS_PUBLISH_PROFILE_PRD != 'true' && env.HAS_OIDC != 'true' && env.HAS_SP_SECRET != 'true' }}
+        run: |
+          echo "No deployment auth configured for target 'prd'."
+          echo "Set AZURE_WEBAPP_PUBLISH_PROFILE_PRD (or AZURE_WEBAPP_PUBLISH_PROFILE),"
+          echo "or configure OIDC secrets (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID),"
+          echo "or set AZURE_CREDENTIALS as a JSON service principal secret."
+          exit 1
+
+      - name: Deploy prd to Azure Web App
+        if: ${{ env.HAS_PUBLISH_PROFILE_PRD != 'true' }}
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           package: .

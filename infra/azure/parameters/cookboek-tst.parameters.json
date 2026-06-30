@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "westeurope"
+    },
+    "appName": {
+      "value": "cookboek-tst-api"
+    },
+    "appServicePlanName": {
+      "value": "cookboek-tst-plan"
+    },
+    "storageAccountName": {
+      "value": "cookboektstsa"
+    },
+    "imageContainerName": {
+      "value": "images"
+    },
+    "skuName": {
+      "value": "F1"
+    },
+    "appSettings": {
+      "value": {
+        "GOOGLE_CLIENT_ID": "replace-me",
+        "DATABASE_URL": "replace-me"
+      }
+    }
+  }
+}

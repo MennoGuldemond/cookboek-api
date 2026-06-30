@@ -4,22 +4,20 @@ import * as logService from '../services/log.service.js'
 export async function get() {
   try {
     const categories = await prisma.category.findMany({ orderBy: { name: 'asc' } })
-    await prisma.$disconnect()
     return categories
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
 export async function getById(id) {
   try {
     const category = await prisma.category.findUnique({ where: { id: id } })
-    await prisma.$disconnect()
     return category
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -44,11 +42,10 @@ export async function upsert(category) {
         },
       })
     }
-    await prisma.$disconnect()
     return existingCategory
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -59,11 +56,9 @@ export async function remove(categoryId) {
         id: categoryId,
       },
     })
-    await prisma.$disconnect()
     return true
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
     return false
   }
 }

@@ -1,0 +1,84 @@
+name: Provision Azure Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      resourceGroup:
+        description: Existing Azure resource group name
+        required: true
+        type: string
+      location:
+        description: Azure region (leave default if your RG is already in westeurope)
+        required: true
+        default: westeurope
+        type: string
+      appName:
+        description: Globally unique Azure Web App name
+        required: true
+        type: string
+      skuName:
+        description: App Service plan SKU
+        required: true
+        default: B1
+        type: choice
+        options:
+          - F1
+          - D1
+          - B1
+          - S1
+          - P1v3
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  TEMPLATE_FILE: infra/azure/main.bicep
+  HAS_OIDC: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
+  HAS_SP_SECRET: ${{ secrets.AZURE_CREDENTIALS != '' }}
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login with OIDC (preferred)
+        if: ${{ env.HAS_OIDC == 'true' }}
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Azure login with service principal secret (fallback)
+        if: ${{ env.HAS_OIDC != 'true' && env.HAS_SP_SECRET == 'true' }}
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Fail when no Azure auth method is configured
+        if: ${{ env.HAS_OIDC != 'true' && env.HAS_SP_SECRET != 'true' }}
+        run: |
+          echo "No Azure auth configured. Set OIDC secrets (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID)"
+          echo "or set AZURE_CREDENTIALS as a JSON service principal secret."
+          exit 1
+
+      - name: Provision infra from Bicep
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az deployment group create \
+              --resource-group "${{ github.event.inputs.resourceGroup }}" \
+              --template-file "${{ env.TEMPLATE_FILE }}" \
+              --parameters appName="${{ github.event.inputs.appName }}" \
+                           location="${{ github.event.inputs.location }}" \
+                           skuName="${{ github.event.inputs.skuName }}" \
+              --query properties.outputs -o json
+
+      - name: Show next step hints
+        run: |
+          echo "Set this in GitHub secrets or variables for deploy workflow:"
+          echo "AZURE_WEBAPP_NAME=${{ github.event.inputs.appName }}"

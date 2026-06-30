@@ -11,11 +11,10 @@ export async function get(params) {
       take: take,
       skip: skip,
     })
-    await prisma.$disconnect()
     return logs
   } catch (err) {
     console.error(err)
-    return await prisma.$disconnect()
+    return null
   }
 }
 
@@ -27,10 +26,9 @@ export async function create(message, level) {
         level,
       },
     })
-    await prisma.$disconnect()
     return log
   } catch (err) {
     console.error(err)
-    return await prisma.$disconnect()
+    return null
   }
 }

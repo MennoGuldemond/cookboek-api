@@ -6,8 +6,8 @@ const require = createRequire(import.meta.url)
 const packageJson = require('../package.json')
 
 const options = {
-  swaggerDefinition: {
-    restapi: '3.0.0',
+  definition: {
+    openapi: '3.0.3',
     info: {
       title: 'Cookboek API',
       version: packageJson.version,
@@ -22,11 +22,11 @@ const options = {
     produces: ['application/json'],
     servers: [
       {
-        url: `http://localhost:${process.env.PORT || 3000}`,
+        url: process.env.APP_BASE_URL || `http://localhost:${process.env.PORT || 3000}`,
       },
     ],
   },
-  apis: ['src/routes/*.ts'],
+  apis: ['src/app.js', 'src/routes/*.js'],
 }
 
 const specs = swaggerJsdoc(options)

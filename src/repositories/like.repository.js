@@ -4,33 +4,30 @@ import * as logService from '../services/log.service.js'
 export async function getByUserId(userId) {
   try {
     const likes = await prisma.likes.findMany({ where: { userId: userId } })
-    await prisma.$disconnect()
     return likes
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
 export async function getByRecipeId(recipeId) {
   try {
     const likes = await prisma.likes.findMany({ where: { recipeId: recipeId } })
-    await prisma.$disconnect()
     return likes
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
 export async function getById(id) {
   try {
     const like = await prisma.likes.findUnique({ where: { id: id } })
-    await prisma.$disconnect()
     return like
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -43,8 +40,8 @@ export async function create(like) {
     })
     return saved
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -55,11 +52,9 @@ export async function remove(likeId) {
         id: likeId,
       },
     })
-    await prisma.$disconnect()
     return true
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
     return false
   }
 }

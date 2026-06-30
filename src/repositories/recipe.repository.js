@@ -1,7 +1,6 @@
-import path from 'path'
-import { unlink } from 'node:fs/promises'
 import { prisma } from '../db/client.js'
 import * as logService from '../services/log.service.js'
+import * as imageService from '../services/image.service.js'
 
 /**
  * Get recipes from the RecipeInfo view with optional filters and pagination
@@ -31,11 +30,10 @@ export async function get(params) {
       take: take,
       skip: skip,
     })
-    await prisma.$disconnect()
     return recipes
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -46,11 +44,10 @@ export async function get(params) {
 export async function getNewest() {
   try {
     const recipe = await prisma.recipeInfo.findFirst({ orderBy: { createdAt: 'desc' } })
-    await prisma.$disconnect()
     return recipe
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -65,11 +62,10 @@ export async function getById(id) {
       where: { id: id },
       include: { author: true, categories: true, likes: true },
     })
-    await prisma.$disconnect()
     return recipe
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -86,7 +82,6 @@ export async function getLikedRecipesByUser(userId) {
     })
     const recipeIds = likedRecipeIds.map((like) => like.recipeId)
     if (recipeIds.length === 0) {
-      await prisma.$disconnect()
       return []
     }
     const recipes = await prisma.recipeInfo.findMany({
@@ -94,11 +89,10 @@ export async function getLikedRecipesByUser(userId) {
         id: { in: recipeIds },
       },
     })
-    await prisma.$disconnect()
     return recipes
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -182,11 +176,10 @@ export async function upsert(recipe, userId) {
         },
       })
     }
-    await prisma.$disconnect()
     return savedRecipe
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    return await prisma.$disconnect()
+    await logService.error(JSON.stringify(err))
+    return null
   }
 }
 
@@ -198,22 +191,34 @@ export async function upsert(recipe, userId) {
  */
 export async function remove(recipeId, userId) {
   try {
-    const recipe = await prisma.recipe.findUnique({ where: { id: recipeId, authorId: userId } })
+    const recipe = await prisma.recipe.findFirst({
+      where: { id: recipeId, authorId: userId },
+      select: { id: true, photoURL: true },
+    })
+
     if (!recipe) {
       return false
     }
-    await prisma.recipe.delete({
-      where: {
-        id: recipe.id,
-      },
-    })
-    const filePath = path.join('./public/images', path.parse(recipe.photoURL).name + path.parse(recipe.photoURL).ext)
-    await unlink(filePath)
-    await prisma.$disconnect()
+
+    // Remove relation rows first to satisfy FK constraints, then delete the recipe.
+    await prisma.$transaction([
+      prisma.likes.deleteMany({ where: { recipeId: recipe.id } }),
+      prisma.categoriesOnRecipes.deleteMany({ where: { recipeId: recipe.id } }),
+      prisma.recipe.delete({ where: { id: recipe.id } }),
+    ])
+
+    // Deleting the recipe should not fail if image cleanup has issues.
+    try {
+      await imageService.deleteByUrl(recipe.photoURL)
+    } catch (imageDeleteError) {
+      await logService.warning(
+        `Image cleanup failed for recipe ${recipe.id}: ${imageDeleteError?.message || imageDeleteError}`
+      )
+    }
+
     return true
   } catch (err) {
-    logService.error(JSON.stringify(err))
-    await prisma.$disconnect()
+    await logService.error(`remove recipe failed: ${err?.message || err}`)
     return false
   }
 }
