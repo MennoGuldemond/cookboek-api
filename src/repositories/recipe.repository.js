@@ -191,15 +191,21 @@ export async function upsert(recipe, userId) {
  */
 export async function remove(recipeId, userId) {
   try {
-    const recipe = await prisma.recipe.findUnique({ where: { id: recipeId, authorId: userId } })
+    const recipe = await prisma.recipe.findFirst({
+      where: { id: recipeId, authorId: userId },
+      select: { id: true, photoURL: true },
+    })
+
     if (!recipe) {
       return false
     }
-    await prisma.recipe.delete({
-      where: {
-        id: recipe.id,
-      },
-    })
+
+    // Remove relation rows first to satisfy FK constraints, then delete the recipe.
+    await prisma.$transaction([
+      prisma.likes.deleteMany({ where: { recipeId: recipe.id } }),
+      prisma.categoriesOnRecipes.deleteMany({ where: { recipeId: recipe.id } }),
+      prisma.recipe.delete({ where: { id: recipe.id } }),
+    ])
 
     // Deleting the recipe should not fail if image cleanup has issues.
     try {
@@ -212,7 +218,7 @@ export async function remove(recipeId, userId) {
 
     return true
   } catch (err) {
-    await logService.error(JSON.stringify(err))
+    await logService.error(`remove recipe failed: ${err?.message || err}`)
     return false
   }
 }
