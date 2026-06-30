@@ -8,6 +8,12 @@
     "appServicePlanName": {
       "value": "cookboek-api-plan-dev"
     },
+    "storageAccountName": {
+      "value": "cookboekapidevimg"
+    },
+    "imageContainerName": {
+      "value": "images"
+    },
     "skuName": {
       "value": "B1"
     },

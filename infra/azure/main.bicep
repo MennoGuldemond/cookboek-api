@@ -17,8 +17,18 @@ param appServicePlanName string = '${appName}-plan'
 @description('SKU for the App Service plan.')
 param skuName string = 'B1'
 
+@description('Globally unique Storage Account name for image uploads. Leave empty to auto-generate from appName.')
+param storageAccountName string = ''
+
+@description('Blob container name used for uploaded images.')
+param imageContainerName string = 'images'
+
 @description('Additional app settings to merge into the Web App configuration.')
 param appSettings object = {}
+
+var resolvedStorageAccountName = empty(storageAccountName)
+  ? take('${toLower(replace(appName, '-', ''))}img', 24)
+  : toLower(storageAccountName)
 
 var baseAppSettings = [
   {
@@ -36,6 +46,18 @@ var baseAppSettings = [
   {
     name: 'ENABLE_ORYX_BUILD'
     value: 'true'
+  }
+  {
+    name: 'IMAGE_STORAGE_PROVIDER'
+    value: 'azure'
+  }
+  {
+    name: 'AZURE_STORAGE_CONTAINER_NAME'
+    value: imageContainerName
+  }
+  {
+    name: 'AZURE_STORAGE_CONNECTION_STRING'
+    value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
   }
 ]
 
@@ -63,6 +85,33 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   }
 }
 
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
+  name: resolvedStorageAccountName
+  location: location
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    minimumTlsVersion: 'TLS1_2'
+    allowBlobPublicAccess: true
+    supportsHttpsTrafficOnly: true
+  }
+}
+
+resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' = {
+  name: 'default'
+  parent: storageAccount
+}
+
+resource imageContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
+  name: imageContainerName
+  parent: blobService
+  properties: {
+    publicAccess: 'Blob'
+  }
+}
+
 resource webApp 'Microsoft.Web/sites@2023-12-01' = {
   name: appName
   location: location
@@ -81,3 +130,5 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
 output webAppName string = webApp.name
 output webAppDefaultHostName string = webApp.properties.defaultHostName
 output appServicePlanName string = appServicePlan.name
+output storageAccountName string = storageAccount.name
+output imageContainerName string = imageContainer.name

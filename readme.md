@@ -15,6 +15,7 @@ This project makes use of:
    - DATABASE_URL=""
    - PORT=3000
    - GOOGLE_CLIENT_ID=""
+   - IMAGE_STORAGE_PROVIDER="local" (optional, defaults to local outside production)
 1. To set the Google CliendId:
    - Navigate to "APIs & Services" > "Credentials".
    - Look for the "OAuth 2.0 Client IDs" section.
@@ -41,3 +42,16 @@ Infrastructure-as-code templates are located in:
 Setup instructions are documented here:
 
 - `docs/azure-cicd-setup.md`
+
+## Image Upload Storage
+
+- Local development: uploads are stored on disk in `./public/images`.
+- Production (Azure): uploads are stored in Azure Blob Storage.
+
+When you deploy infrastructure with `infra/azure/main.bicep`, the following app settings are configured automatically on the Web App:
+
+- `IMAGE_STORAGE_PROVIDER=azure`
+- `AZURE_STORAGE_CONNECTION_STRING`
+- `AZURE_STORAGE_CONTAINER_NAME`
+
+Set them manually only if you are not using this IaC template.

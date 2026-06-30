@@ -11,6 +11,12 @@
     "appServicePlanName": {
       "value": "cookboek-tst-plan"
     },
+    "storageAccountName": {
+      "value": "cookboek-tst-sa"
+    },
+    "imageContainerName": {
+      "value": "images"
+    },
     "skuName": {
       "value": "F1"
     },

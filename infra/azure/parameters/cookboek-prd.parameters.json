@@ -11,6 +11,12 @@
     "appServicePlanName": {
       "value": "cookboek-prd-plan"
     },
+    "storageAccountName": {
+      "value": "cookboek-prd-sa"
+    },
+    "imageContainerName": {
+      "value": "images"
+    },
     "skuName": {
       "value": "D1"
     },
