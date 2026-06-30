@@ -2,38 +2,55 @@ import { OAuth2Client } from 'google-auth-library'
 import * as userService from './services/user.service.js'
 const authClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
+function readIdToken(authorizationHeader) {
+  if (!authorizationHeader) {
+    return null
+  }
+
+  // Accept both raw token and "Bearer <token>" formats.
+  if (authorizationHeader.startsWith('Bearer ')) {
+    return authorizationHeader.slice(7).trim()
+  }
+
+  return authorizationHeader.trim()
+}
+
 export async function isAuthorized(req, res, next) {
-  async function verify() {
-    if (!req.headers.authorization) {
+  try {
+    const idToken = readIdToken(req.headers.authorization)
+    if (!idToken) {
       return res.status(401).send('Unauthorized')
     }
+
     const ticket = await authClient.verifyIdToken({
-      idToken: req.headers.authorization,
+      idToken,
       audience: process.env.GOOGLE_CLIENT_ID,
     })
     const payload = ticket.getPayload()
     if (!payload) {
       return res.status(401).send('Unauthorized')
     }
+
     res.locals.auth = payload
     return next()
-  }
-  verify().catch((error) => {
+  } catch (error) {
     console.error('Authorization verification failed:', error)
     if (!res.headersSent) {
       return res.status(401).send('Unauthorized')
     }
     return null
-  })
+  }
 }
 
 export async function isAdmin(req, res, next) {
-  async function verify() {
-    if (!req.headers.authorization) {
+  try {
+    const idToken = readIdToken(req.headers.authorization)
+    if (!idToken) {
       return res.status(401).send('Unauthorized')
     }
+
     const ticket = await authClient.verifyIdToken({
-      idToken: req.headers.authorization,
+      idToken,
       audience: process.env.GOOGLE_CLIENT_ID,
     })
     const payload = ticket.getPayload()
@@ -48,12 +65,11 @@ export async function isAdmin(req, res, next) {
     } else {
       return res.status(403).send('Forbidden')
     }
-  }
-  verify().catch((error) => {
+  } catch (error) {
     console.error('Admin verification failed:', error)
     if (!res.headersSent) {
       return res.status(401).send('Unauthorized')
     }
     return null
-  })
+  }
 }

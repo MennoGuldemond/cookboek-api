@@ -1,12 +1,33 @@
 import { prisma } from '../db/client.js'
 import * as logService from '../services/log.service.js'
 
+const userSelect = {
+  id: true,
+  email: true,
+  name: true,
+  photoUrl: true,
+  provider: true,
+  createdAt: true,
+}
+
+function toErrorMessage(error) {
+  if (!error) {
+    return 'Unknown error'
+  }
+
+  if (error instanceof Error) {
+    return `${error.name}: ${error.message}`
+  }
+
+  return JSON.stringify(error)
+}
+
 export async function getAll() {
   try {
-    const users = await prisma.user.findMany()
+    const users = await prisma.user.findMany({ select: userSelect })
     return users
   } catch (err) {
-    await logService.error(JSON.stringify(err))
+    await logService.error(`getAll users failed: ${toErrorMessage(err)}`)
     return null
   }
 }
@@ -18,17 +39,20 @@ export async function getById(id) {
     })
     return userInfo
   } catch (err) {
-    await logService.error(JSON.stringify(err))
+    await logService.error(`getById user failed: ${toErrorMessage(err)}`)
     return null
   }
 }
 
 export async function getByEmail(email) {
   try {
-    const user = await prisma.user.findUnique({ where: { email: email } })
+    const user = await prisma.user.findUnique({
+      where: { email: email },
+      select: userSelect,
+    })
     return user
   } catch (err) {
-    await logService.error(JSON.stringify(err))
+    await logService.error(`getByEmail user failed: ${toErrorMessage(err)}`)
     return null
   }
 }
@@ -54,11 +78,12 @@ export async function findOrCreate(userProfile) {
         photoUrl: userProfile.picture,
         provider: 'Google',
       },
+      select: userSelect,
     })
 
     return user
   } catch (err) {
-    await logService.error(`findOrCreate user failed: ${JSON.stringify(err)}`)
+    await logService.error(`findOrCreate user failed: ${toErrorMessage(err)}`)
     return null
   }
 }
@@ -73,10 +98,11 @@ export async function create(userProfile) {
         photoUrl: userProfile.picture,
         provider: 'Google',
       },
+      select: userSelect,
     })
     return newUser
   } catch (err) {
-    await logService.error(JSON.stringify(err))
+    await logService.error(`create user failed: ${toErrorMessage(err)}`)
     return null
   }
 }
